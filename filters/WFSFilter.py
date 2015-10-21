@@ -143,7 +143,7 @@ class WFSFilter(QgsServerFilter):
                         request.appendBody(ba)
                 else:
                     # return the file created without zip
-                    f = QFile(os.path.join(self.tempdir,'%s.%s' % (self.typename, formatDict['filenameExt'])))
+                    f = QFile(os.path.join(self.tempdir,'%s.%s' % (self.filename, formatDict['filenameExt'])))
                     if ( f.open( QFile.ReadOnly ) ):
                         ba = f.readAll()
                         request.appendBody(ba)
