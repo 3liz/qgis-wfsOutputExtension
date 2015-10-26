@@ -61,6 +61,33 @@ WFSFormats = {
         'ogrDatasourceOptions':None,
         'zip': False,
         'extToZip': []
+    },
+    'ods':{
+        'contentType': 'application/vnd.oasis.opendocument.spreadsheet',
+        'filenameExt': 'ods',
+        'forceCRS': None,
+        'ogrProvider': 'ODS',
+        'ogrDatasourceOptions':None,
+        'zip': False,
+        'extToZip': []
+    },
+    'xlsx':{
+        'contentType': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'filenameExt': 'xlsx',
+        'forceCRS': None,
+        'ogrProvider': 'XLSX',
+        'ogrDatasourceOptions':None,
+        'zip': False,
+        'extToZip': []
+    },
+    'csv':{
+        'contentType': 'text/csv',
+        'filenameExt': 'csv',
+        'forceCRS': None,
+        'ogrProvider': 'CSV',
+        'ogrDatasourceOptions':None,
+        'zip': False,
+        'extToZip': []
     }
 }
 
@@ -117,10 +144,14 @@ class WFSFilter(QgsServerFilter):
         
         if data.endswith('</wfs:FeatureCollection>'):
             # all the gml has been intercepted
+            # read the GML
             outputLayer = QgsVectorLayer(os.path.join(self.tempdir,'%s.gml' % self.filename), 'qgis_server_wfs_features', 'ogr' )
             if outputLayer.isValid():
-                # read the GML
-                error = QgsVectorFileWriter.writeAsVectorFormat( outputLayer, os.path.join(self.tempdir,'%s.%s' % (self.filename, formatDict['filenameExt'])), 'utf-8', formatDict['forceCRS'], formatDict['ogrProvider'], False, formatDict['ogrDatasourceOptions'] )
+                # transform
+                crs = formatDict['forceCRS']
+                if crs :
+                    crs = QgsCoordinateReferenceSystem(crs)
+                error = QgsVectorFileWriter.writeAsVectorFormat( outputLayer, os.path.join(self.tempdir,'%s.%s' % (self.filename, formatDict['filenameExt'])), 'utf-8', crs, formatDict['ogrProvider'], False, formatDict['ogrDatasourceOptions'] )
                 if formatDict['zip']:
                     # compress files
                     import zipfile
@@ -147,8 +178,8 @@ class WFSFilter(QgsServerFilter):
                     if ( f.open( QFile.ReadOnly ) ):
                         ba = f.readAll()
                         request.appendBody(ba)
-        else:
-            request.appendBody('')
+        #else:
+        #    request.appendBody('')
         
     def responseComplete(self):
         QgsMessageLog.logMessage("WFSFilter.responseComplete")

@@ -6,9 +6,17 @@ Description
 
 wfsOutputExtension is a QGIS Server Plugin. It extends OGC Web Feature Service capabilities. It adds Output Formats to WFS GetFeature request.
 
-For more information, see:
-* http://www.opengeospatial.org/standards/wps
-* http://pywps.wald.intevation.org
+It adds:
+* KML
+* ESRI ShapeFile as ZIP file
+* MapInfo TAB as ZIP file
+* MIF/MID File as ZIP file
+* CSV, the datatable
+* XLSX, the datatable
+* ODS, the datatable
+
+CSV, XLSX and ODS needs QGIS Server 2.8.4 or 2.12. If you build QGIS Server, you need the commit ae90d8ee6a6673f1c8b6d7cf3e8d69053e0d4a9b in 2.8 or f67234406c4e1fddb4ed440b936a925239d47f72 in 2.10.
+
 
 Install on Ubuntu
 ------------------
