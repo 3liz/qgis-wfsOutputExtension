@@ -118,6 +118,15 @@ class WFSFilter(QgsServerFilter):
                 self.format = oformat
                 self.typename = params.get('TYPENAME', '')
                 self.filename = 'qgis_server_wfs_features_%s' % int(time.time())
+                # set headers
+                formatDict = WFSFormats[self.format]
+                request.clearHeaders()
+                request.setInfoFormat(formatDict['contentType'])
+                request.setHeader('Content-type', formatDict['contentType'])
+                if formatDict['zip']:
+                    request.setHeader('Content-Disposition', 'attachment; filename="%s.zip"' % self.typename)
+                else:
+                    request.setHeader('Content-Disposition', 'attachment; filename="%s.%s"' % (self.typename, formatDict['filenameExt']))
 
     def sendResponse(self):
         if not self.format:
@@ -133,14 +142,15 @@ class WFSFilter(QgsServerFilter):
 
         # change the headers
         # update content-type and content-disposition
-        request.clearHeaders()
+        if not request.headersSent():
+            request.clearHeaders()
+            request.setInfoFormat(formatDict['contentType'])
+            request.setHeader('Content-type', formatDict['contentType'])
+            if formatDict['zip']:
+                request.setHeader('Content-Disposition', 'attachment; filename="%s.zip"' % self.typename)
+            else:
+                request.setHeader('Content-Disposition', 'attachment; filename="%s.%s"' % (self.typename, formatDict['filenameExt']))
         request.clearBody()
-        request.setInfoFormat(formatDict['contentType'])
-        request.setHeader('Content-type', formatDict['contentType'])
-        if formatDict['zip']:
-            request.setHeader('Content-Disposition', 'attachment; filename="%s.zip"' % self.typename)
-        else:
-            request.setHeader('Content-Disposition', 'attachment; filename="%s.%s"' % (self.typename, formatDict['filenameExt']))
 
         if data.endswith('</wfs:FeatureCollection>'):
             # all the gml has been intercepted
