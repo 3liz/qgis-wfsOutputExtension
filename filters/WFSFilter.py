@@ -99,7 +99,7 @@ class WFSFilter(QgsServerFilter):
         self.format = None
         self.typename = ""
         self.filename = ""
-        
+
         self.tempdir = os.path.join( tempfile.gettempdir(), 'qgis_wfs' )
         if not os.path.exists(self.tempdir):
             os.mkdir( self.tempdir )
@@ -122,15 +122,15 @@ class WFSFilter(QgsServerFilter):
     def sendResponse(self):
         if not self.format:
             return
-        
+
         request = self.serverInterface().requestHandler()
         data = request.body().data()
         with open(os.path.join(self.tempdir,'%s.gml' % self.filename), 'a') as f :
             f.write( data )
             f.close()
-        
+
         formatDict = WFSFormats[self.format]
-        
+
         # change the headers
         # update content-type and content-disposition
         request.clearHeaders()
@@ -141,7 +141,7 @@ class WFSFilter(QgsServerFilter):
             request.setHeader('Content-Disposition', 'attachment; filename="%s.zip"' % self.typename)
         else:
             request.setHeader('Content-Disposition', 'attachment; filename="%s.%s"' % (self.typename, formatDict['filenameExt']))
-        
+
         if data.endswith('</wfs:FeatureCollection>'):
             # all the gml has been intercepted
             # read the GML
@@ -180,14 +180,14 @@ class WFSFilter(QgsServerFilter):
                         request.appendBody(ba)
         #else:
         #    request.appendBody('')
-        
+
     def responseComplete(self):
         QgsMessageLog.logMessage("WFSFilter.responseComplete")
-        
+
         if self.format:
             self.format = None
             return
-        
+
         # Update the WFS capabilities
         # by adding ResultFormat to GetFeature
         request = self.serverInterface().requestHandler()
@@ -201,4 +201,4 @@ class WFSFilter(QgsServerFilter):
                         fNode = dom.createElement( k.upper() )
                         rfNode.appendChild( fNode )
             request.clearBody()
-            request.appendBody(dom.toxml())
+            request.appendBody(dom.toxml('utf-8'))
