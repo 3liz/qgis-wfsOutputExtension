@@ -1,7 +1,7 @@
-# This file contains metadata for your plugin. Since 
-# version 2.0 of QGIS this is the proper way to supply 
-# information about a plugin. The old method of 
-# embedding metadata in __init__.py will 
+# This file contains metadata for your plugin. Since
+# version 2.0 of QGIS this is the proper way to supply
+# information about a plugin. The old method of
+# embedding metadata in __init__.py will
 # is no longer supported since version 2.0.
 
 # This file should be included when you package your plugin.# Mandatory items:
@@ -10,7 +10,7 @@
 name=wfsOutputExtension
 qgisMinimumVersion=2.8
 description=Add Output Formats to WFS GetFeature request
-version=1.0
+version=1.0.0
 author=DHONT René-Luc (3Liz)
 email=rldhont@3Liz.com
 ; if True it's a server plugin
@@ -18,7 +18,7 @@ server=True
 
 about=wfsOutputExtension adds Output Formats to WFS GetFeature request.
 
-tracker=https://github.com/3liz/qgis-wfsOutputExtension
+tracker=https://github.com/3liz/qgis-wfsOutputExtension/issues
 repository=https://github.com/3liz/qgis-wfsOutputExtension
 # End of mandatory metadata
 
