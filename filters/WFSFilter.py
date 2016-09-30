@@ -152,7 +152,7 @@ class WFSFilter(QgsServerFilter):
                 request.setHeader('Content-Disposition', 'attachment; filename="%s.%s"' % (self.typename, formatDict['filenameExt']))
         request.clearBody()
 
-        if data.endswith('</wfs:FeatureCollection>'):
+        if data.rstrip().endswith('</wfs:FeatureCollection>'):
             # all the gml has been intercepted
             # read the GML
             outputLayer = QgsVectorLayer(os.path.join(self.tempdir,'%s.gml' % self.filename), 'qgis_server_wfs_features', 'ogr' )
