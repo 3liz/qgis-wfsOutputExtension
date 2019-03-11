@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 /***************************************************************************
     QGIS Server Plugin Filters: Add Output Formats to GetFeature request
@@ -19,20 +18,7 @@
  This script initializes the plugin, making it known to QGIS and QGIS Server.
 """
 
-
-# noinspection PyPep8Naming
-def classFactory(iface):  # pylint: disable=invalid-name
-    """Load wfsOutputExtension class from file wfsOutputExtension.
-
-    :param iface: A QGIS interface instance.
-    :type iface: QgsInterface
-    """
-    #
-    from .wfsOutputExtension import wfsOutputExtension
-    return wfsOutputExtension(iface)
-    
-    
-def serverClassFactory(serverIface):  # pylint: disable=invalid-name
+def serverClassFactory(serverIface):
     """Load wfsOutputExtensionServer class from file wfsOutputExtension.
 
     :param iface: A QGIS Server interface instance.

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 ***************************************************************************
     QGIS Server Plugin Filters: Add Output Formats to GetFeature request
@@ -20,10 +18,8 @@
 import os, time, tempfile
 from xml.dom import minidom
 
-from qgis.server import *
-from qgis.core import *
-
-from PyQt4.QtCore import *
+from qgis.server import QgsServerFilter
+from qgis.core import Qgis, QgsMessageLog
 
 WFSFormats = {
     'shp':{
@@ -94,7 +90,7 @@ WFSFormats = {
 class WFSFilter(QgsServerFilter):
 
     def __init__(self, serverIface):
-        QgsMessageLog.logMessage("WFSFilter.init")
+        QgsMessageLog.logMessage("WFSFilter.init", "wfsOutputExtension", Qgis.Info)
         super(WFSFilter, self).__init__(serverIface)
         self.format = None
         self.typename = ""
@@ -103,10 +99,10 @@ class WFSFilter(QgsServerFilter):
         self.tempdir = os.path.join( tempfile.gettempdir(), 'qgis_wfs' )
         if not os.path.exists(self.tempdir):
             os.mkdir( self.tempdir )
-        QgsMessageLog.logMessage("WFSFilter.tempdir: %s" % self.tempdir)
+        QgsMessageLog.logMessage("WFSFilter.tempdir: %s" % self.tempdir,"wfsOutputExtension", Qgis.Info)
 
     def requestReady(self):
-        QgsMessageLog.logMessage("WFSFilter.requestReady")
+        QgsMessageLog.logMessage("WFSFilter.requestReady", "wfsOutputExtension", Qgis.Info)
         self.format = None
         # verifying format
         request = self.serverInterface().requestHandler()
@@ -192,7 +188,7 @@ class WFSFilter(QgsServerFilter):
         #    request.appendBody('')
 
     def responseComplete(self):
-        QgsMessageLog.logMessage("WFSFilter.responseComplete")
+        QgsMessageLog.logMessage("WFSFilter.responseComplete", "wfsOutputExtension", Qgis.Info)
 
         if self.format:
             self.format = None

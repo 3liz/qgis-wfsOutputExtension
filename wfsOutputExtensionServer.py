@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 /***************************************************************************
     QGIS Server Plugin Filters: Add Output Formats to GetFeature request
@@ -22,11 +21,6 @@ __author__ = 'DHONT René-Luc'
 __date__ = 'October 2015'
 __copyright__ = '(C) 2015, DHONT René-Luc - 3Liz'
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from qgis.core import *
-from qgis.server import *
-
 import os.path
 
 class wfsOutputExtensionServer:
@@ -34,13 +28,9 @@ class wfsOutputExtensionServer:
     this plugin loads wfs filter"""
 
     def __init__(self, serverIface):
-        # Save reference to the QGIS server interface
+        # save reference to the QGIS interface         
         self.serverIface = serverIface
-        QgsMessageLog.logMessage("SUCCESS - wfsOutputExtension init", 'plugin', QgsMessageLog.INFO)
-        
-        from filters.WFSFilter import WFSFilter
-        try:
-            serverIface.registerFilter( WFSFilter(serverIface), 50 )
-        except Exception, e:
-            QgsLogger.debug("wfsOutputExtension - Error loading filter wfs : %s" % e )
+
+        from .wfsfilter import WFSFilter
+        serverIface.registerFilter( WFSFilter(serverIface), 50 )
 
