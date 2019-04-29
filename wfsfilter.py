@@ -19,7 +19,8 @@ import os, time, tempfile
 from xml.dom import minidom
 
 from qgis.server import QgsServerFilter
-from qgis.core import Qgis, QgsMessageLog
+from qgis.core import Qgis, QgsMessageLog, QgsVectorLayer, QgsVectorFileWriter, QgsCoordinateReferenceSystem
+from qgis.PyQt.QtCore import QFile
 
 WFSFormats = {
     'shp':{
@@ -116,37 +117,37 @@ class WFSFilter(QgsServerFilter):
                 self.filename = 'qgis_server_wfs_features_%s' % int(time.time())
                 # set headers
                 formatDict = WFSFormats[self.format]
-                request.clearHeaders()
-                request.setInfoFormat(formatDict['contentType'])
-                request.setHeader('Content-type', formatDict['contentType'])
+                request.clear()
+                request.setRequestHeader('Content-type', formatDict['contentType'])
                 if formatDict['zip']:
-                    request.setHeader('Content-Disposition', 'attachment; filename="%s.zip"' % self.typename)
+                    request.setRequestHeader('Content-Disposition', 'attachment; filename="%s.zip"' % self.typename)
                 else:
-                    request.setHeader('Content-Disposition', 'attachment; filename="%s.%s"' % (self.typename, formatDict['filenameExt']))
+                    request.setRequestHeader('Content-Disposition', 'attachment; filename="%s.%s"' % (self.typename, formatDict['filenameExt']))
 
     def sendResponse(self):
         if not self.format:
             return
 
         request = self.serverInterface().requestHandler()
-        data = request.body().data()
-        with open(os.path.join(self.tempdir,'%s.gml' % self.filename), 'a') as f :
-            f.write( data )
-            f.close()
+        data = request.body().data().decode('utf8')
+        with open(os.path.join(self.tempdir,'%s.gml' % self.filename), 'ab') as f :
+            f.write( request.body() )
+            #f.write( data )
+            #f.close()
 
         formatDict = WFSFormats[self.format]
 
         # change the headers
         # update content-type and content-disposition
         if not request.headersSent():
-            request.clearHeaders()
-            request.setInfoFormat(formatDict['contentType'])
-            request.setHeader('Content-type', formatDict['contentType'])
+            request.clear()
+            request.setRequestHeader('Content-type', formatDict['contentType'])
             if formatDict['zip']:
-                request.setHeader('Content-Disposition', 'attachment; filename="%s.zip"' % self.typename)
+                request.setRequestHeader('Content-Disposition', 'attachment; filename="%s.zip"' % self.typename)
             else:
-                request.setHeader('Content-Disposition', 'attachment; filename="%s.%s"' % (self.typename, formatDict['filenameExt']))
-        request.clearBody()
+                request.setRequestHeader('Content-Disposition', 'attachment; filename="%s.%s"' % (self.typename, formatDict['filenameExt']))
+        else:
+            request.clearBody()
 
         if data.rstrip().endswith('</wfs:FeatureCollection>'):
             # all the gml has been intercepted
@@ -198,7 +199,16 @@ class WFSFilter(QgsServerFilter):
         # by adding ResultFormat to GetFeature
         request = self.serverInterface().requestHandler()
         params = request.parameterMap()
-        if params.get('SERVICE', '').upper() == 'WFS' and params.get('REQUEST', '').upper() == 'GETCAPABILITIES':
+
+        service = params.get('SERVICE', '').upper()
+        if service != 'WFS':
+            return
+
+        request = params.get('REQUEST', '').upper()
+        if request not in ('GETCAPABILITIES','GETFEATURE'):
+            return
+
+        if service == 'GETCAPABILITIES':
             data = request.body().data()
             dom = minidom.parseString( data )
             for gfNode in dom.getElementsByTagName( 'GetFeature' ):
