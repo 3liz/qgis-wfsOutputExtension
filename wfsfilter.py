@@ -133,11 +133,11 @@ class WFSFilter(QgsServerFilter):
             # set headers
             formatDict = WFSFormats[self.format]
             handler.clear()
-            handler.setRequestHeader('Content-type', formatDict['contentType'])
+            handler.setResponseHeader('Content-type', formatDict['contentType'])
             if formatDict['zip']:
-                handler.setRequestHeader('Content-Disposition', 'attachment; filename="%s.zip"' % self.typename)
+                handler.setResponseHeader('Content-Disposition', 'attachment; filename="%s.zip"' % self.typename)
             else:
-                handler.setRequestHeader('Content-Disposition', 'attachment; filename="%s.%s"' % (self.typename, formatDict['filenameExt']))
+                handler.setResponseHeader('Content-Disposition', 'attachment; filename="%s.%s"' % (self.typename, formatDict['filenameExt']))
 
     def sendResponse(self):
         # if format is null, nothing to do
@@ -157,11 +157,11 @@ class WFSFilter(QgsServerFilter):
         # update content-type and content-disposition
         if not handler.headersSent():
             handler.clear()
-            handler.setRequestHeader('Content-type', formatDict['contentType'])
+            handler.setResponseHeader('Content-type', formatDict['contentType'])
             if formatDict['zip']:
-                handler.setRequestHeader('Content-Disposition', 'attachment; filename="%s.zip"' % self.typename)
+                handler.setResponseHeader('Content-Disposition', 'attachment; filename="%s.zip"' % self.typename)
             else:
-                handler.setRequestHeader('Content-Disposition', 'attachment; filename="%s.%s"' % (self.typename, formatDict['filenameExt']))
+                handler.setResponseHeader('Content-Disposition', 'attachment; filename="%s.%s"' % (self.typename, formatDict['filenameExt']))
         else:
             handler.clearBody()
 
