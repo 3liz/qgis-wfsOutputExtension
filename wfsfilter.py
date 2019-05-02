@@ -133,8 +133,9 @@ class WFSFilter(QgsServerFilter):
             return
 
         # verifying format
+        formats = [k.lower() for k in WFSFormats.keys()]
         oformat = params.get('OUTPUTFORMAT', '').lower()
-        if oformat in WFSFormats.keys():
+        if oformat in formats:
             handler.setParameter('OUTPUTFORMAT', 'GML2')
             self.format = oformat
             self.typename = params.get('TYPENAME', '')
@@ -270,14 +271,33 @@ class WFSFilter(QgsServerFilter):
             self.allgml = False
             return
 
-        if service == 'GETCAPABILITIES':
+        if request == 'GETCAPABILITIES':
             data = handler.body().data()
             dom = minidom.parseString( data )
-            for gfNode in dom.getElementsByTagName( 'GetFeature' ):
-                for rfNode in dom.getElementsByTagName( 'ResultFormat' ):
-                    for k in WFSFormats.keys():
-                        fNode = dom.createElement( k.upper() )
-                        rfNode.appendChild( fNode )
+            ver = dom.documentElement.attributes['version'].value
+            if ver == '1.0.0':
+                for gfNode in dom.getElementsByTagName( 'GetFeature' ):
+                    for rfNode in dom.getElementsByTagName( 'ResultFormat' ):
+                        for k in WFSFormats.keys():
+                            fNode = dom.createElement( k.upper() )
+                            rfNode.appendChild( fNode )
+            else:
+                for opmNode in dom.getElementsByTagName( 'ows:OperationsMetadata' ):
+                    for opNode in opmNode.getElementsByTagName( 'ows:Operation' ):
+                        if 'name' not in opNode.attributes:
+                            continue
+                        if opNode.attributes['name'].value != 'GetFeature':
+                            continue
+                        for paramNode in opNode.getElementsByTagName( 'ows:Parameter' ):
+                            if 'name' not in paramNode.attributes:
+                                continue
+                            if paramNode.attributes['name'].value != 'outputFormat':
+                                continue
+                            for k in WFSFormats.keys():
+                                vNode = dom.createElement( 'ows:Value' )
+                                vText = dom.createTextNode( k.upper() )
+                                vNode.appendChild(vText)
+                                paramNode.appendChild( vNode )
             handler.clearBody()
             handler.appendBody(dom.toxml('utf-8'))
             return
