@@ -59,6 +59,15 @@ WFSFormats = {
         'zip': False,
         'extToZip': []
     },
+    'gpkg':{
+        'contentType': 'application/geopackage+vnd.sqlite3',
+        'filenameExt': 'gpkg',
+        'forceCRS': None,
+        'ogrProvider': 'GPKG',
+        'ogrDatasourceOptions':None,
+        'zip': False,
+        'extToZip': []
+    },
     'ods':{
         'contentType': 'application/vnd.oasis.opendocument.spreadsheet',
         'filenameExt': 'ods',
