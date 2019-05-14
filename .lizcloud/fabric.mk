@@ -12,7 +12,7 @@ main:
 	echo "Makefile for packaging infra components: select a task"
 
 PACKAGE=qgis_wfsoutput
-FILES = ../*.py ../metadata.txt ../README.md
+FILES = ../*.py ../filters ../metadata.txt ../README.md
 PACKAGEDIR=wfsOutputExtension
 
 build/$(PACKAGEDIR):
