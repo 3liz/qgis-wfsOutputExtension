@@ -42,4 +42,5 @@ nosetests.xml
 *.pyc
 *.DS_Store
 
+.idea
 
