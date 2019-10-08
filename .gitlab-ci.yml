@@ -33,7 +33,7 @@ deploy_snap:
 release_prod:
   stage: release
   script:
-    - $FACTORY_SCRIPTS/release_package $FACTORY_PACKAGE_NAME
+    - $FACTORY_SCRIPTS/release-package $FACTORY_PACKAGE_NAME
   environment:
     name: production
   when: manual
