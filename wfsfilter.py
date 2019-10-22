@@ -117,8 +117,8 @@ class WFSFilter(QgsServerFilter):
         self.allgml = False
 
         self.tempdir = os.path.join( tempfile.gettempdir(), 'qgis_wfs' )
-        if not os.path.exists(self.tempdir):
-            os.mkdir( self.tempdir )
+        #XXX Fix race-condition if multiple serveurs are run concurrently
+        os.makedirs( self.tempdir, exist_ok=True )
         QgsMessageLog.logMessage("WFSFilter.tempdir: %s" % self.tempdir,"wfsOutputExtension", Qgis.Info)
 
     def requestReady(self):
