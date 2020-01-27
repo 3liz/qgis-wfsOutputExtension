@@ -28,7 +28,7 @@ of the plugin web site, retrieve the archive of version 1.1 or higher, and
 extract the content of the archive with `unzip` or an other tool.
 
 Then move the directory of the plugin into the plugins directory of Qgis Server
-(it is `/opt/qgis/plugins` most often). You need to restart Qgis Server.
+(it is `/opt/qgis/plugins` most often), rename the folder removing the version description. You need to restart Qgis Server.
 
 For more details, read [the documention of Qgis Server](https://docs.qgis.org/3.4/en/docs/user_manual/working_with_ogc/server/plugins.html#installation).
 
