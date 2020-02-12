@@ -7,6 +7,7 @@ Description
 wfsOutputExtension is a QGIS3 Server Plugin. It extends OGC Web Feature Service capabilities. It adds Output Formats to WFS GetFeature request.
 
 It adds:
+* Geopackage
 * KML
 * ESRI ShapeFile as ZIP file
 * MapInfo TAB as ZIP file

@@ -19,7 +19,15 @@ import os, time, tempfile
 from xml.dom import minidom
 
 from qgis.server import QgsServerFilter
-from qgis.core import Qgis, QgsMessageLog, QgsVectorLayer, QgsVectorFileWriter, QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsProject
+from qgis.core import (
+    Qgis,
+    QgsMessageLog,
+    QgsVectorLayer,
+    QgsVectorFileWriter,
+    QgsCoordinateReferenceSystem,
+    QgsCoordinateTransform,
+    QgsProject,
+)
 from qgis.PyQt.QtCore import QFile
 
 WFSFormats = {
