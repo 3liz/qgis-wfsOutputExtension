@@ -167,7 +167,14 @@ class WFSFilter(QgsServerFilter):
         # write body in GML temp file
         data = handler.body().data().decode('utf8')
         with open(os.path.join(self.tempdir,'%s.gml' % self.filename), 'ab') as f :
-            f.write( handler.body() )
+            if data.find('xsi:schemaLocation') == -1:
+                f.write( handler.body() )
+            else:
+                # to avoid that QGIS Server/OGR loads schemas when reading GML
+                import re
+                data = re.sub(r'xsi:schemaLocation=\".*\"', 'xsi:schemaLocation=""', data)
+                f.write(data.encode('utf8'))
+
 
         formatDict = WFSFormats[self.format]
 
