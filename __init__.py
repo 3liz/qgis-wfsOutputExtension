@@ -1,22 +1,28 @@
-"""
-/***************************************************************************
-    QGIS Server Plugin Filters: Add Output Formats to GetFeature request
-    ---------------------
-    Date                 : October 2015
-    Copyright            : (C) 2015 by René-Luc D'Hont - 3Liz
-    Email                : rldhont at 3liz dot com
- ***************************************************************************/
+__copyright__ = 'Copyright 2020, 3Liz'
+__license__ = 'GPL version 3'
+__email__ = 'info@3liz.org'
+__revision__ = '$Format:%H$'
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
- This script initializes the plugin, making it known to QGIS and QGIS Server.
-"""
+
+def classFactory(iface):
+    from qgis.PyQt.QtWidgets import QMessageBox
+
+    class Nothing:
+
+        def __init__(self, iface):
+            self.iface = iface
+
+        def initGui(self):
+            QMessageBox.warning(
+                self.iface.mainWindow(),
+                'WfsOutputExtension plugin',
+                'WfsOutputExtension is plugin for QGIS Server. There is nothing in QGIS Desktop.',
+            )
+
+        def unload(self):
+            pass
+
+    return Nothing(iface)
 
 
 def serverClassFactory(serverIface):
