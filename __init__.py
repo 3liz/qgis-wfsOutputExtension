@@ -18,12 +18,12 @@
  This script initializes the plugin, making it known to QGIS and QGIS Server.
 """
 
+
 def serverClassFactory(serverIface):
     """Load wfsOutputExtensionServer class from file wfsOutputExtension.
 
-    :param iface: A QGIS Server interface instance.
-    :type iface: QgsServerInterface
+    :param serverIface: A QGIS Server interface instance.
+    :type serverIface: QgsServerInterface
     """
-    #
-    from .wfsOutputExtensionServer import wfsOutputExtensionServer
-    return wfsOutputExtensionServer(serverIface)
+    from .wfsOutputExtensionServer import WfsOutputExtensionServer
+    return WfsOutputExtensionServer(serverIface)

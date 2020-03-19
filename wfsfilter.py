@@ -15,10 +15,12 @@
 ***************************************************************************
 """
 
-import os, time, tempfile
+import os
+import tempfile
+import time
 from xml.dom import minidom
 
-from qgis.server import QgsServerFilter
+from qgis.PyQt.QtCore import QFile
 from qgis.core import (
     Qgis,
     QgsMessageLog,
@@ -28,82 +30,83 @@ from qgis.core import (
     QgsCoordinateTransform,
     QgsProject,
 )
-from qgis.PyQt.QtCore import QFile
+from qgis.server import QgsServerFilter
 
 WFSFormats = {
-    'shp':{
+    'shp': {
         'contentType': 'application/x-zipped-shp',
         'filenameExt': 'shp',
         'forceCRS': None,
         'ogrProvider': 'ESRI Shapefile',
-        'ogrDatasourceOptions':None,
+        'ogrDatasourceOptions': None,
         'zip': True,
-        'extToZip': ['shx','dbf','prj']
+        'extToZip': ['shx', 'dbf', 'prj']
     },
-    'tab':{
+    'tab': {
         'contentType': 'application/x-zipped-tab',
         'filenameExt': 'tab',
         'forceCRS': None,
         'ogrProvider': 'Mapinfo File',
-        'ogrDatasourceOptions':None,
+        'ogrDatasourceOptions': None,
         'zip': True,
-        'extToZip': ['dat','map','id']
+        'extToZip': ['dat', 'map', 'id']
     },
-    'mif':{
+    'mif': {
         'contentType': 'application/x-zipped-mif',
         'filenameExt': 'mif',
         'forceCRS': None,
         'ogrProvider': 'Mapinfo File',
-        'ogrDatasourceOptions':'FORMAT=MIF',
+        'ogrDatasourceOptions': 'FORMAT=MIF',
         'zip': True,
         'extToZip': ['mid']
     },
-    'kml':{
+    'kml': {
         'contentType': 'application/vnd.google-earth.kml+xml',
         'filenameExt': 'kml',
         'forceCRS': 'EPSG:4326',
         'ogrProvider': 'KML',
-        'ogrDatasourceOptions':None,
+        'ogrDatasourceOptions': None,
         'zip': False,
         'extToZip': []
     },
-    'gpkg':{
+    'gpkg': {
         'contentType': 'application/geopackage+vnd.sqlite3',
         'filenameExt': 'gpkg',
         'forceCRS': None,
         'ogrProvider': 'GPKG',
-        'ogrDatasourceOptions':None,
+        'ogrDatasourceOptions': None,
         'zip': False,
         'extToZip': []
     },
-    'ods':{
+    'ods': {
         'contentType': 'application/vnd.oasis.opendocument.spreadsheet',
         'filenameExt': 'ods',
         'forceCRS': None,
         'ogrProvider': 'ODS',
-        'ogrDatasourceOptions':None,
+        'ogrDatasourceOptions': None,
         'zip': False,
         'extToZip': []
     },
-    'xlsx':{
+    'xlsx': {
         'contentType': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         'filenameExt': 'xlsx',
         'forceCRS': None,
         'ogrProvider': 'XLSX',
-        'ogrDatasourceOptions':None,
+        'ogrDatasourceOptions': None,
         'zip': False,
         'extToZip': []
     },
-    'csv':{
+    'csv': {
         'contentType': 'text/csv',
         'filenameExt': 'csv',
         'forceCRS': None,
         'ogrProvider': 'CSV',
-        'ogrDatasourceOptions':None,
+        'ogrDatasourceOptions': None,
         'zip': False,
         'extToZip': []
     }
 }
+
 
 class WFSFilter(QgsServerFilter):
 
@@ -116,10 +119,10 @@ class WFSFilter(QgsServerFilter):
         self.filename = ""
         self.allgml = False
 
-        self.tempdir = os.path.join( tempfile.gettempdir(), 'qgis_wfs' )
-        #XXX Fix race-condition if multiple serveurs are run concurrently
-        os.makedirs( self.tempdir, exist_ok=True )
-        QgsMessageLog.logMessage("WFSFilter.tempdir: %s" % self.tempdir,"wfsOutputExtension", Qgis.Info)
+        self.tempdir = os.path.join(tempfile.gettempdir(), 'qgis_wfs')
+        # XXX Fix race-condition if multiple serveurs are run concurrently
+        os.makedirs(self.tempdir, exist_ok=True)
+        QgsMessageLog.logMessage("WFSFilter.tempdir: %s" % self.tempdir, "wfsOutputExtension", Qgis.Info)
 
     def requestReady(self):
         QgsMessageLog.logMessage("WFSFilter.requestReady", "wfsOutputExtension", Qgis.Info)
@@ -166,9 +169,9 @@ class WFSFilter(QgsServerFilter):
 
         # write body in GML temp file
         data = handler.body().data().decode('utf8')
-        with open(os.path.join(self.tempdir,'%s.gml' % self.filename), 'ab') as f :
+        with open(os.path.join(self.tempdir, '%s.gml' % self.filename), 'ab') as f:
             if data.find('xsi:schemaLocation') == -1:
-                f.write( handler.body() )
+                f.write(handler.body())
             else:
                 # to avoid that QGIS Server/OGR loads schemas when reading GML
                 import re
@@ -198,7 +201,7 @@ class WFSFilter(QgsServerFilter):
     def sendOutputFile(self, handler):
         formatDict = WFSFormats[self.format]
         # read the GML
-        outputLayer = QgsVectorLayer(os.path.join(self.tempdir,'%s.gml' % self.filename), 'qgis_server_wfs_features', 'ogr' )
+        outputLayer = QgsVectorLayer(os.path.join(self.tempdir, '%s.gml' % self.filename), 'qgis_server_wfs_features', 'ogr')
         if outputLayer.isValid():
             try:
                 # create save options
@@ -215,7 +218,7 @@ class WFSFilter(QgsServerFilter):
                     options.datasourceOptions = formatDict['ogrDatasourceOptions']
 
                 # write file
-                write_result, error_message = QgsVectorFileWriter.writeAsVectorFormat( outputLayer, os.path.join(self.tempdir,'%s.%s' % (self.filename, formatDict['filenameExt'])), options )
+                write_result, error_message = QgsVectorFileWriter.writeAsVectorFormat(outputLayer, os.path.join(self.tempdir, '%s.%s' % (self.filename, formatDict['filenameExt'])), options)
                 if write_result != QgsVectorFileWriter.NoError:
                     handler.appendBody(b'')
                     QgsMessageLog.logMessage(error_message, "wfsOutputExtension", Qgis.Critical)
@@ -228,28 +231,29 @@ class WFSFilter(QgsServerFilter):
             if formatDict['zip']:
                 # compress files
                 import zipfile
+                # noinspection PyBroadException
                 try:
                     import zlib
                     compression = zipfile.ZIP_DEFLATED
-                except:
+                except Exception:
                     compression = zipfile.ZIP_STORED
                 # create the zip file
-                with zipfile.ZipFile(os.path.join(self.tempdir,'%s.zip' % self.filename), 'w') as zf:
+                with zipfile.ZipFile(os.path.join(self.tempdir, '%s.zip' % self.filename), 'w') as zf:
                     # add all files
-                    zf.write(os.path.join(self.tempdir,'%s.%s' % (self.filename, formatDict['filenameExt'])), compress_type=compression, arcname='%s.%s' % (self.typename, formatDict['filenameExt']))
+                    zf.write(os.path.join(self.tempdir, '%s.%s' % (self.filename, formatDict['filenameExt'])), compress_type=compression, arcname='%s.%s' % (self.typename, formatDict['filenameExt']))
                     for e in formatDict['extToZip']:
-                        if os.path.exists(os.path.join(self.tempdir,'%s.%s' % (self.filename, e))):
-                            zf.write(os.path.join(self.tempdir,'%s.%s' % (self.filename, e)), compress_type=compression, arcname='%s.%s' % (self.typename, e))
+                        if os.path.exists(os.path.join(self.tempdir, '%s.%s' % (self.filename, e))):
+                            zf.write(os.path.join(self.tempdir, '%s.%s' % (self.filename, e)), compress_type=compression, arcname='%s.%s' % (self.typename, e))
                     zf.close()
-                f = QFile(os.path.join(self.tempdir,'%s.zip' % self.filename))
-                if ( f.open( QFile.ReadOnly ) ):
+                f = QFile(os.path.join(self.tempdir, '%s.zip' % self.filename))
+                if f.open(QFile.ReadOnly):
                     ba = f.readAll()
                     handler.appendBody(ba)
                     return True
             else:
                 # return the file created without zip
-                f = QFile(os.path.join(self.tempdir,'%s.%s' % (self.filename, formatDict['filenameExt'])))
-                if ( f.open( QFile.ReadOnly ) ):
+                f = QFile(os.path.join(self.tempdir, '%s.%s' % (self.filename, formatDict['filenameExt'])))
+                if f.open(QFile.ReadOnly):
                     ba = f.readAll()
                     handler.appendBody(ba)
                     return True
@@ -271,14 +275,14 @@ class WFSFilter(QgsServerFilter):
             return
 
         request = params.get('REQUEST', '').upper()
-        if request not in ('GETCAPABILITIES','GETFEATURE'):
+        if request not in ('GETCAPABILITIES', 'GETFEATURE'):
             return
 
         if request == 'GETFEATURE' and self.format:
             if not self.allgml:
                 # all the gml has not been intercepted in sendResponse
                 handler.clearBody()
-                with open(os.path.join(self.tempdir,'%s.gml' % self.filename), 'a') as f :
+                with open(os.path.join(self.tempdir, '%s.gml' % self.filename), 'a') as f:
                     f.write('</wfs:FeatureCollection>')
                 self.sendOutputFile(handler)
 
@@ -288,31 +292,31 @@ class WFSFilter(QgsServerFilter):
 
         if request == 'GETCAPABILITIES':
             data = handler.body().data()
-            dom = minidom.parseString( data )
+            dom = minidom.parseString(data)
             ver = dom.documentElement.attributes['version'].value
             if ver == '1.0.0':
-                for gfNode in dom.getElementsByTagName( 'GetFeature' ):
-                    for rfNode in dom.getElementsByTagName( 'ResultFormat' ):
+                for gfNode in dom.getElementsByTagName('GetFeature'):
+                    for rfNode in dom.getElementsByTagName('ResultFormat'):
                         for k in WFSFormats.keys():
-                            fNode = dom.createElement( k.upper() )
-                            rfNode.appendChild( fNode )
+                            fNode = dom.createElement(k.upper())
+                            rfNode.appendChild(fNode)
             else:
-                for opmNode in dom.getElementsByTagName( 'ows:OperationsMetadata' ):
-                    for opNode in opmNode.getElementsByTagName( 'ows:Operation' ):
+                for opmNode in dom.getElementsByTagName('ows:OperationsMetadata'):
+                    for opNode in opmNode.getElementsByTagName('ows:Operation'):
                         if 'name' not in opNode.attributes:
                             continue
                         if opNode.attributes['name'].value != 'GetFeature':
                             continue
-                        for paramNode in opNode.getElementsByTagName( 'ows:Parameter' ):
+                        for paramNode in opNode.getElementsByTagName('ows:Parameter'):
                             if 'name' not in paramNode.attributes:
                                 continue
                             if paramNode.attributes['name'].value != 'outputFormat':
                                 continue
                             for k in WFSFormats.keys():
-                                vNode = dom.createElement( 'ows:Value' )
-                                vText = dom.createTextNode( k.upper() )
+                                vNode = dom.createElement('ows:Value')
+                                vText = dom.createTextNode(k.upper())
                                 vNode.appendChild(vText)
-                                paramNode.appendChild( vNode )
+                                paramNode.appendChild(vNode)
             handler.clearBody()
             handler.appendBody(dom.toxml('utf-8'))
             return

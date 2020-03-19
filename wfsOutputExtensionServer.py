@@ -21,16 +21,13 @@ __author__ = 'DHONT René-Luc'
 __date__ = 'October 2015'
 __copyright__ = '(C) 2015, DHONT René-Luc - 3Liz'
 
-import os.path
 
-class wfsOutputExtensionServer:
+class WfsOutputExtensionServer:
     """Plugin for QGIS server
     this plugin loads wfs filter"""
 
     def __init__(self, serverIface):
-        # save reference to the QGIS interface         
         self.serverIface = serverIface
 
         from .wfsfilter import WFSFilter
-        serverIface.registerFilter( WFSFilter(serverIface), 50 )
-
+        serverIface.registerFilter(WFSFilter(serverIface), 50)
