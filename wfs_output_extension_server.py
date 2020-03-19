@@ -29,5 +29,5 @@ class WfsOutputExtensionServer:
     def __init__(self, serverIface):
         self.serverIface = serverIface
 
-        from .wfsfilter import WFSFilter
+        from .wfs_filter import WFSFilter
         serverIface.registerFilter(WFSFilter(serverIface), 50)

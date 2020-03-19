@@ -25,5 +25,5 @@ def serverClassFactory(serverIface):
     :param serverIface: A QGIS Server interface instance.
     :type serverIface: QgsServerInterface
     """
-    from .wfsOutputExtensionServer import WfsOutputExtensionServer
+    from .wfs_output_extension_server import WfsOutputExtensionServer
     return WfsOutputExtensionServer(serverIface)
