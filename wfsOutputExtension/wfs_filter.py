@@ -66,6 +66,15 @@ WFSFormats = {
         'zip': False,
         'extToZip': []
     },
+    'gpx': {
+        'contentType': 'application/gpx+xml',
+        'filenameExt': 'gpx',
+        'forceCRS': 'EPSG:4326',
+        'ogrProvider': 'GPX',
+        'ogrDatasourceOptions': 'GPX_USE_EXTENSIONS=YES',
+        'zip': False,
+        'extToZip': []
+    },
     'ods': {
         'contentType': 'application/vnd.oasis.opendocument.spreadsheet',
         'filenameExt': 'ods',
