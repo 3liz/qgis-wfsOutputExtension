@@ -1,0 +1,44 @@
+dist: bionic
+
+language: python
+
+python: 3.7
+
+services:
+  - docker
+
+#branches:
+#  only:
+#    - master
+#    - dev
+
+jobs:
+  include:
+    - stage: Deploy
+      if: tag IS present
+      condition: $TRAVIS_TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+
+      name: Create release, publish on plugins.qgis.org
+
+      install:
+        - pip3 install qgis-plugin-ci
+
+      before_deploy:
+        - export RELEASE_TITLE="Release of $TRAVIS_TAG"
+
+      script:
+        - qgis-plugin-ci -v
+
+      deploy:
+
+        - provider: releases
+          edge: true
+          file: .
+          name: ${RELEASE_TITLE}
+          api_key: ${GH_TOKEN}
+          on:
+            tags: true
+
+        - provider: script
+          script: qgis-plugin-ci release ${TRAVIS_TAG} --github-token ${GH_TOKEN} --osgeo-username ${OSGEO_USERNAME} --osgeo-password ${OSGEO_PASSWORD} --create-plugin-repo
+          on:
+            tags: true
