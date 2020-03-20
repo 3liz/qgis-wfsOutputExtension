@@ -9,6 +9,7 @@ wfsOutputExtension.zip
 *.egg-info
 dist
 build
+build2
 eggs
 parts
 bin
