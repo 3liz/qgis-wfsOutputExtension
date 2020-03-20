@@ -15,6 +15,7 @@ It adds:
 * CSV, the datatable
 * ESRI ShapeFile as ZIP file
 * Geopackage
+* GPX
 * KML
 * MapInfo TAB as ZIP file
 * MIF/MID File as ZIP file
