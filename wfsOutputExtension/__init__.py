@@ -25,11 +25,21 @@ def classFactory(iface):
     return Nothing(iface)
 
 
+class WfsOutputExtensionServer:
+    """Plugin for QGIS server
+    this plugin loads wfs filter"""
+
+    def __init__(self, serverIface):
+        self.serverIface = serverIface
+
+        from .wfs_filter import WFSFilter
+        serverIface.registerFilter(WFSFilter(serverIface), 50)
+
+
 def serverClassFactory(serverIface):
     """Load wfsOutputExtensionServer class from file wfsOutputExtension.
 
     :param serverIface: A QGIS Server interface instance.
     :type serverIface: QgsServerInterface
     """
-    from .wfs_output_extension_server import WfsOutputExtensionServer
     return WfsOutputExtensionServer(serverIface)
