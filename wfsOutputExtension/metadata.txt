@@ -1,31 +1,22 @@
 [general]
 name=wfsOutputExtension
 qgisMinimumVersion=3.0
-description=Add Output Formats to WFS GetFeature request
-version=1.2.3
+description=Adds additional output formats to WFS GetFeature request on QGIS Server such as Geopackage, ODS, CSV etc
+about=wfsOutputExtension adds additional output formats to WFS GetFeature request such as Geopackage, ODS, CSV etc
+tags=server,wfs,ogc
+
 author=3Liz
 email=rldhont@3Liz.com
-server=True
-
-about=wfsOutputExtension adds Output Formats to WFS GetFeature request.
 
 tracker=https://github.com/3liz/qgis-wfsOutputExtension/issues
 repository=https://github.com/3liz/qgis-wfsOutputExtension
-
-changelog=
- Version 1.2.3
- * Fix race condition on multi-serveur platform
- * QGIS Server / OGR loads schema when reading GML
- * Some PEP8 fixes
-
-# Tags are comma separated with spaces allowed
-tags=server, wfs, ogc
-
 homepage=https://github.com/3liz/qgis-wfsOutputExtension
+
+version=1.3.0
+changelog=changelog
 category=Plugins
 icon=icon.png
-# experimental flag
-experimental=True
 
-# deprecated flag (applies to the whole plugin, not just a single version)
+experimental=True
 deprecated=False
+server=True

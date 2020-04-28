@@ -7,34 +7,28 @@ python: 3.7
 services:
   - docker
 
-#branches:
-#  only:
-#    - master
-#    - dev
-
+branches:
+  only:
+    - master
+    - "/^v.*$/"
 jobs:
   include:
     - stage: Deploy
       if: tag IS present
-      condition: $TRAVIS_TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+
+      condition: "$TRAVIS_TAG =~ ^v[0-9]+\\.[0-9]+\\.[0-9]+"
       name: Create release, publish on plugins.qgis.org
-
       install:
-        - pip3 install qgis-plugin-ci
-
+        - pip3 install git+https://github.com/Gustry/qgis-plugin-ci.git
       before_deploy:
-        - export RELEASE_TITLE="Release of $TRAVIS_TAG"
-
+        - export RELEASE_TITLE=${TRAVIS_TAG:1}
       script:
         - qgis-plugin-ci -v
-
       deploy:
-
         - provider: releases
           edge: true
-          file: .
-          name: ${RELEASE_TITLE}
-          api_key: ${GH_TOKEN}
+          file: "."
+          name: "${RELEASE_TITLE}"
+          api_key: "${GH_TOKEN}"
           on:
             tags: true
 
