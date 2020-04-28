@@ -6,7 +6,7 @@ about=wfsOutputExtension adds additional output formats to WFS GetFeature reques
 tags=server,wfs,ogc
 
 author=3Liz
-email=rldhont@3Liz.com
+email=info@3liz.com
 
 tracker=https://github.com/3liz/qgis-wfsOutputExtension/issues
 repository=https://github.com/3liz/qgis-wfsOutputExtension
