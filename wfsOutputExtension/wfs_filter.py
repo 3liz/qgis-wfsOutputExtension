@@ -119,8 +119,8 @@ class Logger:
 
 class WFSFilter(QgsServerFilter):
 
-    def __init__(self, serverIface):
-        super(WFSFilter, self).__init__(serverIface)
+    def __init__(self, server_iface):
+        super(WFSFilter, self).__init__(server_iface)
         self.logger = Logger()
         self.logger.info('WFSFilter.init')
 
@@ -163,15 +163,16 @@ class WFSFilter(QgsServerFilter):
             self.filename = 'qgis_server_wfs_features_{}'.format(time.time())
 
             # set headers
-            formatDict = WFSFormats[self.format]
+            format_dict = WFSFormats[self.format]
             handler.clear()
-            handler.setResponseHeader('Content-type', formatDict['contentType'])
-            if formatDict['zip']:
+            handler.setResponseHeader('Content-type', format_dict['contentType'])
+            if format_dict['zip']:
                 handler.setResponseHeader(
                     'Content-Disposition', 'attachment; filename="{}.zip"'.format(self.typename))
             else:
                 handler.setResponseHeader(
-                    'Content-Disposition', 'attachment; filename="{}.{}"'.format(self.typename, formatDict['filenameExt']))
+                    'Content-Disposition',
+                    'attachment; filename="{}.{}"'.format(self.typename, format_dict['filenameExt']))
 
     def sendResponse(self):
         # if format is null, nothing to do
@@ -192,19 +193,20 @@ class WFSFilter(QgsServerFilter):
                 data = re.sub(r'xsi:schemaLocation=\".*\"', 'xsi:schemaLocation=""', data)
                 f.write(data.encode('utf8'))
 
-        formatDict = WFSFormats[self.format]
+        format_dict = WFSFormats[self.format]
 
         # change the headers
         # update content-type and content-disposition
         if not handler.headersSent():
             handler.clear()
-            handler.setResponseHeader('Content-type', formatDict['contentType'])
-            if formatDict['zip']:
+            handler.setResponseHeader('Content-type', format_dict['contentType'])
+            if format_dict['zip']:
                 handler.setResponseHeader(
                     'Content-Disposition', 'attachment; filename="{}.zip"'.format(self.typename))
             else:
                 handler.setResponseHeader(
-                    'Content-Disposition', 'attachment; filename="{}.{}"'.format(self.typename, formatDict['filenameExt']))
+                    'Content-Disposition',
+                    'attachment; filename="{}.{}"'.format(self.typename, format_dict['filenameExt']))
         else:
             handler.clearBody()
 
@@ -214,33 +216,37 @@ class WFSFilter(QgsServerFilter):
             self.sendOutputFile(handler)
 
     def sendOutputFile(self, handler):
-        formatDict = WFSFormats[self.format]
+        format_dict = WFSFormats[self.format]
+
         # read the GML
         gml_path = join(self.tempdir, '{}.gml'.format(self.filename))
-        outputLayer = QgsVectorLayer(gml_path, 'qgis_server_wfs_features', 'ogr')
-        if outputLayer.isValid():
+        output_layer = QgsVectorLayer(gml_path, 'qgis_server_wfs_features', 'ogr')
+        output_file = join(self.tempdir, '{}.{}'.format(self.filename, format_dict['filenameExt']))
+        if output_layer.isValid():
             try:
                 # create save options
                 options = QgsVectorFileWriter.SaveVectorOptions()
                 # driver name
-                options.driverName = formatDict['ogrProvider']
+                options.driverName = format_dict['ogrProvider']
                 # file encoding
                 options.fileEncoding = 'utf-8'
 
                 # coordinate transformation
-                if formatDict['forceCRS']:
+                if format_dict['forceCRS']:
                     options.ct = QgsCoordinateTransform(
-                        outputLayer.crs(),
-                        QgsCoordinateReferenceSystem(formatDict['forceCRS']),
+                        output_layer.crs(),
+                        QgsCoordinateReferenceSystem(format_dict['forceCRS']),
                         QgsProject.instance())
 
                 # datasource options
-                if formatDict['ogrDatasourceOptions']:
-                    options.datasourceOptions = formatDict['ogrDatasourceOptions']
+                if format_dict['ogrDatasourceOptions']:
+                    options.datasourceOptions = format_dict['ogrDatasourceOptions']
 
                 # write file
                 write_result, error_message = QgsVectorFileWriter.writeAsVectorFormat(
-                    outputLayer, join(self.tempdir, '{}.{}'.format(self.filename, formatDict['filenameExt'])), options)
+                    output_layer,
+                    output_file,
+                    options)
 
                 if write_result != QgsVectorFileWriter.NoError:
                     handler.appendBody(b'')
@@ -252,26 +258,36 @@ class WFSFilter(QgsServerFilter):
                 self.logger.critical(str(e))
                 return False
 
-            if formatDict['zip']:
+            if format_dict['zip']:
                 # compress files
                 import zipfile
                 # noinspection PyBroadException
                 try:
-                    import zlib
+                    import zlib  # NOQA
                     compression = zipfile.ZIP_DEFLATED
                 except Exception:
                     compression = zipfile.ZIP_STORED
 
                 # create the zip file
-                with zipfile.ZipFile(join(self.tempdir, '%s.zip' % self.filename), 'w') as zf:
+                zip_file_path = join(self.tempdir, '%s.zip' % self.filename)
+                with zipfile.ZipFile(zip_file_path, 'w') as zf:
                     # add all files
-                    zf.write(join(self.tempdir, '%s.%s' % (self.filename, formatDict['filenameExt'])), compress_type=compression, arcname='%s.%s' % (self.typename, formatDict['filenameExt']))
-                    for e in formatDict['extToZip']:
-                        if exists(join(self.tempdir, '%s.%s' % (self.filename, e))):
-                            zf.write(join(self.tempdir, '%s.%s' % (self.filename, e)), compress_type=compression, arcname='%s.%s' % (self.typename, e))
+                    zf.write(
+                        join(self.tempdir, '%s.%s' % (self.filename, format_dict['filenameExt'])),
+                        compress_type=compression,
+                        arcname='%s.%s' % (self.typename, format_dict['filenameExt']))
+
+                    for e in format_dict['extToZip']:
+                        file_path = join(self.tempdir, '%s.%s' % (self.filename, e))
+                        if exists(file_path):
+                            zf.write(
+                                file_path,
+                                compress_type=compression,
+                                arcname='%s.%s' % (self.typename, e))
+
                     zf.close()
 
-                f = QFile(join(self.tempdir, '%s.zip' % self.filename))
+                f = QFile(zip_file_path)
                 if f.open(QFile.ReadOnly):
                     ba = f.readAll()
                     handler.appendBody(ba)
@@ -279,7 +295,7 @@ class WFSFilter(QgsServerFilter):
 
             else:
                 # return the file created without zip
-                f = QFile(join(self.tempdir, '%s.%s' % (self.filename, formatDict['filenameExt'])))
+                f = QFile(output_file)
                 if f.open(QFile.ReadOnly):
                     ba = f.readAll()
                     handler.appendBody(ba)
@@ -323,10 +339,11 @@ class WFSFilter(QgsServerFilter):
             ver = dom.documentElement.attributes['version'].value
             if ver == '1.0.0':
                 for gfNode in dom.getElementsByTagName('GetFeature'):
+                    _ = gfNode
                     for rfNode in dom.getElementsByTagName('ResultFormat'):
                         for k in WFSFormats.keys():
-                            fNode = dom.createElement(k.upper())
-                            rfNode.appendChild(fNode)
+                            f_node = dom.createElement(k.upper())
+                            rfNode.appendChild(f_node)
             else:
                 for opmNode in dom.getElementsByTagName('ows:OperationsMetadata'):
                     for opNode in opmNode.getElementsByTagName('ows:Operation'):
@@ -340,10 +357,10 @@ class WFSFilter(QgsServerFilter):
                             if paramNode.attributes['name'].value != 'outputFormat':
                                 continue
                             for k in WFSFormats.keys():
-                                vNode = dom.createElement('ows:Value')
-                                vText = dom.createTextNode(k.upper())
-                                vNode.appendChild(vText)
-                                paramNode.appendChild(vNode)
+                                v_node = dom.createElement('ows:Value')
+                                v_text = dom.createTextNode(k.upper())
+                                v_node.appendChild(v_text)
+                                paramNode.appendChild(v_node)
             handler.clearBody()
             handler.appendBody(dom.toxml('utf-8'))
             return
