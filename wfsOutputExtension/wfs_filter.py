@@ -221,7 +221,14 @@ class WFSFilter(QgsServerFilter):
         # read the GML
         gml_path = join(self.tempdir, '{}.gml'.format(self.filename))
         output_layer = QgsVectorLayer(gml_path, 'qgis_server_wfs_features', 'ogr')
-        output_file = join(self.tempdir, '{}.{}'.format(self.filename, format_dict['filenameExt']))
+
+        # Temporary file where to write the output
+        temporary = QTemporaryFile(
+            join(QDir.tempPath(), 'request-WFS-XXXXXX.{}'.format(format_dict['filenameExt'])))
+        temporary.open()
+        output_file = temporary.fileName()
+        temporary.close()
+
         if output_layer.isValid():
             try:
                 # create save options
