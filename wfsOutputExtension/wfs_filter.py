@@ -9,7 +9,7 @@ from os import makedirs
 from os.path import join, exists
 from xml.dom import minidom
 
-from qgis.PyQt.QtCore import QFile
+from qgis.PyQt.QtCore import QFile, QDir, QTemporaryFile
 from qgis.core import (
     Qgis,
     QgsMessageLog,
@@ -243,10 +243,17 @@ class WFSFilter(QgsServerFilter):
                     options.datasourceOptions = format_dict['ogrDatasourceOptions']
 
                 # write file
-                write_result, error_message = QgsVectorFileWriter.writeAsVectorFormat(
-                    output_layer,
-                    output_file,
-                    options)
+                if Qgis.QGIS_VERSION_INT >= 31003:
+                    write_result, error_message = QgsVectorFileWriter.writeAsVectorFormatV2(
+                        output_layer,
+                        output_file,
+                        QgsProject.instance().transformContext(),
+                        options)
+                else:
+                    write_result, error_message = QgsVectorFileWriter.writeAsVectorFormat(
+                        output_layer,
+                        output_file,
+                        options)
 
                 if write_result != QgsVectorFileWriter.NoError:
                     handler.appendBody(b'')
