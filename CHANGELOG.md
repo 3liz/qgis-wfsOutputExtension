@@ -1,11 +1,17 @@
 # CHANGELOG
 
-### 1.3.0 - 28/04/2020
+### v1.4.0 - 28/09/2020
+
+* Refactor the code
+* Fix issue about Excel files
+* Remove the use of deprecated code
+
+### v1.3.0 - 28/04/2020
 
 * Enable GPX export
 * Small code review
 
-### 1.2.3 - 19/03/2020
+### v1.2.3 - 19/03/2020
 
 * Add empty class for QGIS Desktop
 * OGR loads schema when reading GML
