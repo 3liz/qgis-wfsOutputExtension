@@ -11,10 +11,10 @@ Demo in [Lizmap Web Client](https://github.com/3liz/lizmap-web-client):
 ## Description
 
 wfsOutputExtension is a QGIS Server Plugin. It extends OGC Web Feature Service capabilities.
-It adds Output Formats to WFS GetFeature request.
+It adds output formats to WFS GetFeature request.
 
 It adds:
-* CSV, the datatable
+* CSV
 * ESRI ShapeFile as ZIP file
 * Geopackage
 * GPX
