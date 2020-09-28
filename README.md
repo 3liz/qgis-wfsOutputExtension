@@ -1,5 +1,7 @@
 # wfsOutputExtension
 
+![Icon](wfsOutputExtension/icon.png)
+
 QGIS Server Plugin to add additional output formats to WFS GetFeature request.
 
 Demo in [Lizmap Web Client](https://github.com/3liz/lizmap-web-client): 
