@@ -1,4 +1,5 @@
 stages:
+- tag
 - build
 - deploy
 - release
@@ -8,6 +9,15 @@ variables:
     FACTORY_PACKAGE_NAME: qgis_wfsoutput
     FACTORY_PACKAGE_TYPE: plugin
     FACTORY_MANIFEST: ".lizcloud/factory.manifest"
+
+check_tag:
+  stage: tag
+  only:
+    - tags
+  tags:
+    - fabric
+  script:
+    .lizcloud/check_tag.sh
 
 build:
   stage: build
