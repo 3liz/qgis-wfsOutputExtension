@@ -1,5 +1,9 @@
 # CHANGELOG
 
+### v1.4.1 - 29/09/2020
+
+* Fix a packaging issue
+
 ### v1.4.0 - 28/09/2020
 
 * Refactor the code
