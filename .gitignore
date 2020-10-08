@@ -44,5 +44,9 @@ nosetests.xml
 *.pyc
 *.DS_Store
 
-.idea
+tests/.cache
+tests/.local
+tests/.pytest_cache
+tests/__output__
+.idea/
 wfsoutputextension.*.zip

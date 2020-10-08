@@ -39,3 +39,11 @@ Then move the directory of the plugin into the plugins directory of QGIS Server
 (it is `/opt/qgis/plugins` most often), rename the folder to `wfsOutputExtension`. You need to restart QGIS Server.
 
 For more details, read [the documention of Qgis Server](https://docs.qgis.org/3.4/en/docs/user_manual/working_with_ogc/server/plugins.html#installation).
+
+# Tests
+
+```bash
+docker pull 3liz/qgis-platform:3.10
+docker tag 3liz/qgis-platform:3.10 qgis-platform:3.10
+make test
+```
