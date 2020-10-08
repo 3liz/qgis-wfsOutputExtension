@@ -132,12 +132,12 @@ class WFSFilter(QgsServerFilter):
         self.filename = ""
         self.allgml = False
 
-        self.tempdir = join(tempfile.gettempdir(), 'QGIS_WfsOutputExtension')
+        self.temp_dir = join(tempfile.gettempdir(), 'QGIS_WfsOutputExtension')
         # self.temp_dir = '/src/'  # Use ONLY in debug for docker
 
         # XXX Fix race-condition if multiple servers are run concurrently
-        makedirs(self.tempdir, exist_ok=True)
-        self.logger.info('WFSFilter.tempdir: {}'.format(self.tempdir))
+        makedirs(self.temp_dir, exist_ok=True)
+        self.logger.info('WFSFilter.tempdir: {}'.format(self.temp_dir))
 
     def requestReady(self):
         self.logger.info('WFSFilter.requestReady')
@@ -170,7 +170,7 @@ class WFSFilter(QgsServerFilter):
             # set headers
             format_dict = WFSFormats[self.format]
             handler.clear()
-            handler.setResponseHeader('Content-type', format_dict['contentType'])
+            handler.setResponseHeader('Content-Type', format_dict['contentType'])
             if format_dict['zip']:
                 handler.setResponseHeader(
                     'Content-Disposition', 'attachment; filename="{}.zip"'.format(self.typename))
@@ -188,7 +188,7 @@ class WFSFilter(QgsServerFilter):
 
         # write body in GML temp file
         data = handler.body().data().decode('utf8')
-        output_file = join(self.tempdir, '{}.gml'.format(self.filename))
+        output_file = join(self.temp_dir, '{}.gml'.format(self.filename))
         with open(output_file, 'ab') as f:
             if data.find('xsi:schemaLocation') == -1:
                 f.write(handler.body())
@@ -218,13 +218,13 @@ class WFSFilter(QgsServerFilter):
         if data.rstrip().endswith('</wfs:FeatureCollection>'):
             # all the gml has been intercepted
             self.allgml = True
-            self.sendOutputFile(handler)
+            self.send_output_file(handler)
 
-    def sendOutputFile(self, handler):
+    def send_output_file(self, handler):
         format_dict = WFSFormats[self.format]
 
         # read the GML
-        gml_path = join(self.tempdir, '{}.gml'.format(self.filename))
+        gml_path = join(self.temp_dir, '{}.gml'.format(self.filename))
         output_layer = QgsVectorLayer(gml_path, 'qgis_server_wfs_features', 'ogr')
 
         if not output_layer.isValid():
@@ -234,102 +234,101 @@ class WFSFilter(QgsServerFilter):
 
         # Temporary file where to write the output
         temporary = QTemporaryFile(
-            join(self.tempdir, 'request-XXXXXX.{}'.format(format_dict['filenameExt'])))
+            join(self.temp_dir, 'request-XXXXXX.{}'.format(format_dict['filenameExt'])))
         temporary.open()
         output_file = temporary.fileName()
         temporary.close()
 
-        if output_layer.isValid():
-            try:
-                # create save options
-                options = QgsVectorFileWriter.SaveVectorOptions()
-                # driver name
-                options.driverName = format_dict['ogrProvider']
-                # file encoding
-                options.fileEncoding = 'utf-8'
+        try:
+            # create save options
+            options = QgsVectorFileWriter.SaveVectorOptions()
+            # driver name
+            options.driverName = format_dict['ogrProvider']
+            # file encoding
+            options.fileEncoding = 'utf-8'
 
-                # coordinate transformation
-                if format_dict['forceCRS']:
-                    options.ct = QgsCoordinateTransform(
-                        output_layer.crs(),
-                        QgsCoordinateReferenceSystem(format_dict['forceCRS']),
-                        QgsProject.instance())
+            # coordinate transformation
+            if format_dict['forceCRS']:
+                options.ct = QgsCoordinateTransform(
+                    output_layer.crs(),
+                    QgsCoordinateReferenceSystem(format_dict['forceCRS']),
+                    QgsProject.instance())
 
-                # datasource options
-                if format_dict['ogrDatasourceOptions']:
-                    options.datasourceOptions = format_dict['ogrDatasourceOptions']
+            # datasource options
+            if format_dict['ogrDatasourceOptions']:
+                options.datasourceOptions = format_dict['ogrDatasourceOptions']
 
-                # write file
-                if Qgis.QGIS_VERSION_INT >= 31003:
-                    write_result, error_message = QgsVectorFileWriter.writeAsVectorFormatV2(
-                        output_layer,
-                        output_file,
-                        QgsProject.instance().transformContext(),
-                        options)
-                else:
-                    write_result, error_message = QgsVectorFileWriter.writeAsVectorFormat(
-                        output_layer,
-                        output_file,
-                        options)
+            # write file
+            if Qgis.QGIS_VERSION_INT >= 31003:
+                write_result, error_message = QgsVectorFileWriter.writeAsVectorFormatV2(
+                    output_layer,
+                    output_file,
+                    QgsProject.instance().transformContext(),
+                    options)
+            else:
+                write_result, error_message = QgsVectorFileWriter.writeAsVectorFormat(
+                    output_layer,
+                    output_file,
+                    options)
 
-                if write_result != QgsVectorFileWriter.NoError:
-                    handler.appendBody(b'')
-                    self.logger.critical(error_message)
-                    return False
-
-            except Exception as e:
+            if write_result != QgsVectorFileWriter.NoError:
                 handler.appendBody(b'')
-                exc_type, _, exc_tb = exc_info()
-                self.logger.critical(str(e))
-                self.logger.critical(exc_type)
-                self.logger.critical('\n'.join(traceback.format_tb(exc_tb)))
+                self.logger.critical(error_message)
                 return False
 
-            if format_dict['zip']:
-                # compress files
-                import zipfile
-                try:
-                    import zlib  # NOQA
-                    compression = zipfile.ZIP_DEFLATED
-                except ImportError:
-                    compression = zipfile.ZIP_STORED
+        except Exception as e:
+            handler.appendBody(b'')
+            exc_type, _, exc_tb = exc_info()
+            self.logger.critical(str(e))
+            self.logger.critical(exc_type)
+            self.logger.critical('\n'.join(traceback.format_tb(exc_tb)))
+            return False
 
-                # create the zip file
-                base_filename = splitext(output_file)[0]
-                zip_file_path = join(self.tempdir, '{}.zip'.format(base_filename))
-                with zipfile.ZipFile(zip_file_path, 'w') as zf:
+        if format_dict['zip']:
+            # compress files
+            import zipfile
+            try:
+                import zlib  # NOQA
+                compression = zipfile.ZIP_DEFLATED
+            except ImportError:
+                compression = zipfile.ZIP_STORED
 
-                    # Add the main file
-                    arc_filename = '{}.{}'.format(self.typename, format_dict['filenameExt'])
-                    zf.write(
-                        output_file,
-                        compress_type=compression,
-                        arcname=arc_filename)
+            # create the zip file
+            base_filename = splitext(output_file)[0]
+            zip_file_path = join(self.temp_dir, '{}.zip'.format(base_filename))
+            with zipfile.ZipFile(zip_file_path, 'w') as zf:
 
-                    for extension in format_dict['extToZip']:
-                        file_path = join(self.tempdir, '{}.{}'.format(base_filename, extension))
-                        if exists(file_path):
-                            arc_filename = '{}.{}'.format(self.typename, extension)
-                            zf.write(
-                                file_path,
-                                compress_type=compression,
-                                arcname=arc_filename)
+                # Add the main file
+                arc_filename = '{}.{}'.format(self.typename, format_dict['filenameExt'])
+                zf.write(
+                    output_file,
+                    compress_type=compression,
+                    arcname=arc_filename)
 
-                    zf.close()
+                for extension in format_dict['extToZip']:
+                    file_path = join(self.temp_dir, '{}.{}'.format(base_filename, extension))
+                    if exists(file_path):
+                        arc_filename = '{}.{}'.format(self.typename, extension)
+                        zf.write(
+                            file_path,
+                            compress_type=compression,
+                            arcname=arc_filename)
 
-                f = QFile(zip_file_path)
-                if f.open(QFile.ReadOnly):
-                    ba = f.readAll()
-                    handler.appendBody(ba)
-                    return True
+                zf.close()
 
-            else:
-                # return the file created without zip
-                f = QFile(output_file)
-                if f.open(QFile.ReadOnly):
-                    ba = f.readAll()
-                    handler.appendBody(ba)
-                    return True
+            f = QFile(zip_file_path)
+            if f.open(QFile.ReadOnly):
+                ba = f.readAll()
+                handler.appendBody(ba)
+                return True
+
+        else:
+            # return the file created without zip
+            f = QFile(output_file)
+            if f.open(QFile.ReadOnly):
+                ba = f.readAll()
+                handler.appendBody(ba)
+                return True
 
         handler.appendBody(b'')
         self.logger.critical('Error no output file')
@@ -355,9 +354,9 @@ class WFSFilter(QgsServerFilter):
             if not self.allgml:
                 # all the gml has not been intercepted in sendResponse
                 handler.clearBody()
-                with open(join(self.tempdir, '%s.gml' % self.filename), 'a') as f:
+                with open(join(self.temp_dir, '%s.gml' % self.filename), 'a') as f:
                     f.write('</wfs:FeatureCollection>')
-                self.sendOutputFile(handler)
+                self.send_output_file(handler)
 
             self.format = None
             self.allgml = False
