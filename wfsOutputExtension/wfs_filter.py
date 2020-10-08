@@ -165,7 +165,7 @@ class WFSFilter(QgsServerFilter):
             handler.setParameter('OUTPUTFORMAT', 'GML2')
             self.format = oformat
             self.typename = params.get('TYPENAME', '')
-            self.filename = 'qgis_server_wfs_features_{}'.format(time.time())
+            self.filename = 'gml_features_{}'.format(time.time())
 
             # set headers
             format_dict = WFSFormats[self.format]
@@ -191,6 +191,7 @@ class WFSFilter(QgsServerFilter):
         output_file = join(self.temp_dir, '{}.gml'.format(self.filename))
         with open(output_file, 'ab') as f:
             if data.find('xsi:schemaLocation') == -1:
+                # noinspection PyTypeChecker
                 f.write(handler.body())
             else:
                 # to avoid that QGIS Server/OGR loads schemas when reading GML
@@ -234,7 +235,7 @@ class WFSFilter(QgsServerFilter):
 
         # Temporary file where to write the output
         temporary = QTemporaryFile(
-            join(self.temp_dir, 'request-XXXXXX.{}'.format(format_dict['filenameExt'])))
+            join(self.temp_dir, 'to-{}-XXXXXX.{}'.format(self.format, format_dict['filenameExt'])))
         temporary.open()
         output_file = temporary.fileName()
         temporary.close()
@@ -259,6 +260,7 @@ class WFSFilter(QgsServerFilter):
                 options.datasourceOptions = format_dict['ogrDatasourceOptions']
 
             # write file
+            # noinspection PyUnresolvedReferences
             if Qgis.QGIS_VERSION_INT >= 31003:
                 write_result, error_message = QgsVectorFileWriter.writeAsVectorFormatV2(
                     output_layer,
@@ -354,7 +356,7 @@ class WFSFilter(QgsServerFilter):
             if not self.allgml:
                 # all the gml has not been intercepted in sendResponse
                 handler.clearBody()
-                with open(join(self.temp_dir, '%s.gml' % self.filename), 'a') as f:
+                with open(join(self.temp_dir, '{}.gml'.format(self.filename)), 'a') as f:
                     f.write('</wfs:FeatureCollection>')
                 self.send_output_file(handler)
 
