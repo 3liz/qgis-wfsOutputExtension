@@ -1,3 +1,5 @@
+import tempfile
+
 import gdal
 import sys
 import os
@@ -99,6 +101,13 @@ class OWSResponse:
     @property
     def content(self) -> bytes:
         return bytes(self._resp.body())
+
+    def file(self, extension) -> str:
+        path = os.path.join(tempfile.mkdtemp(), 'test.' + extension)
+        f = open(path, 'wb')
+        f.write(self.content)
+        f.close()
+        return path
 
     @property
     def status_code(self) -> int:

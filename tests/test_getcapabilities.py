@@ -10,7 +10,7 @@ PROJECT = 'lines.qgs'
 
 
 def test_getcapabilties(client):
-    """Test Get Capabilities for WFS."""
+    """ Test GetCapabilities. """
     query_string = (
         "?"
         "SERVICE=WFS&"
