@@ -48,5 +48,6 @@ tests/.cache
 tests/.local
 tests/.pytest_cache
 tests/__output__
+tests/qgis_server.log
 .idea/
 wfsoutputextension.*.zip

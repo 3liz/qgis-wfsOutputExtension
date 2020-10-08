@@ -15,4 +15,8 @@ export QT_LOGGING_RULES="*.debug=false;*.warning=false"
 export QGIS_DISABLE_MESSAGE_HOOKS=1
 export QGIS_NO_OVERRIDE_IMPORT=1
 
+echo -n "" > /src/tests/qgis_server.log
+export QGIS_SERVER_LOG_FILE="/src/tests/qgis_server.log"
+export QGIS_SERVER_LOG_LEVEL=0
+
 pytest -v --qgis-plugins=/src $@
