@@ -6,7 +6,7 @@ __copyright__ = 'Copyright 2020, 3Liz'
 __license__ = 'GPL version 3'
 __email__ = 'info@3liz.org'
 
-PROJECT = 'france_parts.qgs'
+PROJECT = 'lines.qgs'
 
 
 def test_getcapabilties(client):
