@@ -1,7 +1,5 @@
-import io
 import logging
 import pytest
-import zipfile
 
 from qgis.core import QgsVectorLayer
 
@@ -161,7 +159,6 @@ def test_getfeature_csv(client):
     _test_vector_layer(rv.file('csv'), 'CSV')
 
 
-@pytest.mark.xfail
 def test_getfeature_shapefile(client):
     """ Test GetFeature as Shapefile. """
     query_string = (
@@ -176,16 +173,9 @@ def test_getfeature_shapefile(client):
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
     assert "application/x-zipped-shp" in rv.headers.get('Content-type'), rv.headers
-
-    print(rv.content)
-    # zf = zipfile.ZipFile(io.BytesIO(rv.content), "r")
-    # for fileinfo in zf.infolist():
-    #     print(zf.read(fileinfo).decode('ascii'))
-
-    assert False
+    _test_vector_layer('/vsizip/' + rv.file('zip'), 'ESRI Shapefile')
 
 
-@pytest.mark.xfail
 def test_getfeature_tab(client):
     """ Test GetFeature as TAB. """
     query_string = (
@@ -200,10 +190,9 @@ def test_getfeature_tab(client):
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
     assert 'application/x-zipped-tab' in rv.headers.get('Content-type'), rv.headers
-    _test_vector_layer(rv.file('tab'), 'TAB')
+    _test_vector_layer('/vsizip/' + rv.file('zip') + '/lines.tab', 'MapInfo File')
 
 
-@pytest.mark.xfail
 def test_getfeature_mif(client):
     """ Test GetFeature as MIF. """
     query_string = (
@@ -218,4 +207,4 @@ def test_getfeature_mif(client):
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
     assert 'application/x-zipped-mif' in rv.headers.get('Content-type'), rv.headers
-    _test_vector_layer(rv.file('mif'), 'MIF')
+    _test_vector_layer('/vsizip/' + rv.file('zip') + '/lines.mif', 'MapInfo File')

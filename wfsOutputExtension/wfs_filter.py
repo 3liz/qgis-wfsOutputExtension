@@ -5,11 +5,14 @@ __revision__ = '$Format:%H$'
 
 import tempfile
 import time
+import traceback
+
 from os import makedirs
-from os.path import join, exists
+from os.path import join, exists, splitext
+from sys import exc_info
 from xml.dom import minidom
 
-from qgis.PyQt.QtCore import QFile, QDir, QTemporaryFile
+from qgis.PyQt.QtCore import QFile, QTemporaryFile
 from qgis.core import (
     Qgis,
     QgsMessageLog,
@@ -45,7 +48,7 @@ WFSFormats = {
         'filenameExt': 'mif',
         'forceCRS': None,
         'ogrProvider': 'Mapinfo File',
-        'ogrDatasourceOptions': 'FORMAT=MIF',
+        'ogrDatasourceOptions': ['FORMAT=MIF'],
         'zip': True,
         'extToZip': ['mid']
     },
@@ -72,7 +75,7 @@ WFSFormats = {
         'filenameExt': 'gpx',
         'forceCRS': 'EPSG:4326',
         'ogrProvider': 'GPX',
-        'ogrDatasourceOptions': 'GPX_USE_EXTENSIONS=YES',
+        'ogrDatasourceOptions': ['GPX_USE_EXTENSIONS=YES'],
         'zip': False,
         'extToZip': []
     },
@@ -129,7 +132,9 @@ class WFSFilter(QgsServerFilter):
         self.filename = ""
         self.allgml = False
 
-        self.tempdir = join(tempfile.gettempdir(), 'qgis_wfs')
+        self.tempdir = join(tempfile.gettempdir(), 'QGIS_WfsOutputExtension')
+        # self.temp_dir = '/src/'  # Use ONLY in debug for docker
+
         # XXX Fix race-condition if multiple servers are run concurrently
         makedirs(self.tempdir, exist_ok=True)
         self.logger.info('WFSFilter.tempdir: {}'.format(self.tempdir))
@@ -222,9 +227,14 @@ class WFSFilter(QgsServerFilter):
         gml_path = join(self.tempdir, '{}.gml'.format(self.filename))
         output_layer = QgsVectorLayer(gml_path, 'qgis_server_wfs_features', 'ogr')
 
+        if not output_layer.isValid():
+            handler.appendBody(b'')
+            self.logger.critical('Output layer {} is not valid.'.format(gml_path))
+            return False
+
         # Temporary file where to write the output
         temporary = QTemporaryFile(
-            join(QDir.tempPath(), 'request-WFS-XXXXXX.{}'.format(format_dict['filenameExt'])))
+            join(self.tempdir, 'request-XXXXXX.{}'.format(format_dict['filenameExt'])))
         temporary.open()
         output_file = temporary.fileName()
         temporary.close()
@@ -269,35 +279,41 @@ class WFSFilter(QgsServerFilter):
 
             except Exception as e:
                 handler.appendBody(b'')
+                exc_type, _, exc_tb = exc_info()
                 self.logger.critical(str(e))
+                self.logger.critical(exc_type)
+                self.logger.critical('\n'.join(traceback.format_tb(exc_tb)))
                 return False
 
             if format_dict['zip']:
                 # compress files
                 import zipfile
-                # noinspection PyBroadException
                 try:
                     import zlib  # NOQA
                     compression = zipfile.ZIP_DEFLATED
-                except Exception:
+                except ImportError:
                     compression = zipfile.ZIP_STORED
 
                 # create the zip file
-                zip_file_path = join(self.tempdir, '%s.zip' % self.filename)
+                base_filename = splitext(output_file)[0]
+                zip_file_path = join(self.tempdir, '{}.zip'.format(base_filename))
                 with zipfile.ZipFile(zip_file_path, 'w') as zf:
-                    # add all files
-                    zf.write(
-                        join(self.tempdir, '%s.%s' % (self.filename, format_dict['filenameExt'])),
-                        compress_type=compression,
-                        arcname='%s.%s' % (self.typename, format_dict['filenameExt']))
 
-                    for e in format_dict['extToZip']:
-                        file_path = join(self.tempdir, '%s.%s' % (self.filename, e))
+                    # Add the main file
+                    arc_filename = '{}.{}'.format(self.typename, format_dict['filenameExt'])
+                    zf.write(
+                        output_file,
+                        compress_type=compression,
+                        arcname=arc_filename)
+
+                    for extension in format_dict['extToZip']:
+                        file_path = join(self.tempdir, '{}.{}'.format(base_filename, extension))
                         if exists(file_path):
+                            arc_filename = '{}.{}'.format(self.typename, extension)
                             zf.write(
                                 file_path,
                                 compress_type=compression,
-                                arcname='%s.%s' % (self.typename, e))
+                                arcname=arc_filename)
 
                     zf.close()
 
