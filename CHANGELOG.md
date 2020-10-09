@@ -1,5 +1,11 @@
 # CHANGELOG
 
+### v1.5.0 - 09/10/2020
+
+* Fix regressions about ZIP files (SHP, MIF and TAB)
+* Refactoring the code and add tests for each format
+* Known issue about GPX export
+
 ### v1.4.1 - 29/09/2020
 
 * Fix a packaging issue
