@@ -238,7 +238,7 @@ class WFSFilter(QgsServerFilter):
             join(self.temp_dir, 'to-{}-XXXXXX.{}'.format(self.format, format_dict['filenameExt'])))
         temporary.open()
         output_file = temporary.fileName()
-        temporary.close()
+        temporary.remove()  # Fix issue #18
 
         try:
             # create save options
