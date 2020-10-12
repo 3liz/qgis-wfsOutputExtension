@@ -31,14 +31,19 @@ It adds:
 
 ## Installation
 
-To install the plugin, go to the [download section](https://github.com/3liz/qgis-wfsOutputExtension/releases)
-of the plugin web site, retrieve the correct archive version and 
-extract the content of the archive with `unzip` or an other tool.
+To install the plugin :
+* Go to the [download section](https://github.com/3liz/qgis-wfsOutputExtension/releases)
+* Retrieve the archive version for a given QGIS version (QGIS 2 or QGIS 3)
+* Extract the content of the archive with `unzip`
+* Check rights
+* Move the directory of the plugin into the plugins directory of QGIS Server (it is `/opt/qgis/plugins` most
+often)
+* Restart QGIS Server
 
-Then move the directory of the plugin into the plugins directory of QGIS Server
-(it is `/opt/qgis/plugins` most often), rename the folder to `wfsOutputExtension`. You need to restart QGIS Server.
-
-For more details, read [the documention of Qgis Server](https://docs.qgis.org/3.4/en/docs/user_manual/working_with_ogc/server/plugins.html#installation).
+For more details :
+* Read [the documention of QGIS Server](https://docs.qgis.org/testing/en/docs/server_manual/plugins.html#installation).
+* Read [AtlasPrint install process](https://github.com/3liz/qgis-atlasprint/blob/master/atlasprint/README.md#installation-with-qgis-server)
+because it's similar.
 
 # Tests
 
