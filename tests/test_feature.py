@@ -34,7 +34,11 @@ def test_getfeature_gml(client):
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
     assert 'text/xml' in rv.headers.get('Content-Type'), rv.headers
-    _test_vector_layer(rv.file('gml'), 'GML')
+    layer = _test_vector_layer(rv.file('gml'), 'GML')
+    assert layer.fields().names() == ['gml_id', 'id', 'name']
+    assert layer.uniqueValues(0) == {'lines.1', 'lines.2', 'lines.3', 'lines.4'}
+    assert layer.uniqueValues(1) == {1, 2, 3, 4}
+    assert layer.uniqueValues(2) == {'éù%@ > 1', '(]~€ > 2', '<![CDATA[Line < 3]]>', '<![CDATA[Line < 4]]>'}
 
 
 def test_getfeature_kml(client):
@@ -69,7 +73,8 @@ def test_getfeature_gpkg(client):
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
     assert 'application/geopackage+vnd.sqlite3' in rv.headers.get('Content-type'), rv.headers
-    _test_vector_layer(rv.file('gpkg'), 'GPKG')
+    layer = _test_vector_layer(rv.file('gpkg'), 'GPKG')
+    assert layer.fields().names() == ['fid', 'gml_id', 'id', 'name']
 
 
 @pytest.mark.xfail
@@ -87,7 +92,8 @@ def test_getfeature_gpx(client):
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
     assert 'application/gpx+xml' in rv.headers.get('Content-type'), rv.headers
-    _test_vector_layer(rv.file('gpx'), 'GPX')
+    layer = _test_vector_layer(rv.file('gpx'), 'GPX')
+    assert layer.fields().names() == ['gml_id', 'id', 'name']
 
 
 def test_getfeature_ods(client):
@@ -104,7 +110,8 @@ def test_getfeature_ods(client):
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
     assert 'application/vnd.oasis.opendocument.spreadsheet' in rv.headers.get('Content-type'), rv.headers
-    _test_vector_layer(rv.file('ods'), 'ODS')
+    layer = _test_vector_layer(rv.file('ods'), 'ODS')
+    assert layer.fields().names() == ['gml_id', 'id', 'name']
 
 
 def test_getfeature_geojson(client):
@@ -121,7 +128,8 @@ def test_getfeature_geojson(client):
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
     assert 'application/vnd.geo+json' in rv.headers.get('Content-Type'), rv.headers
-    _test_vector_layer(rv.file('geojson'), 'GeoJSON')
+    layer = _test_vector_layer(rv.file('geojson'), 'GeoJSON')
+    assert layer.fields().names() == ['id', 'name']
 
 
 def test_getfeature_excel(client):
@@ -139,7 +147,8 @@ def test_getfeature_excel(client):
     assert rv.status_code == 200
     expected = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     assert expected in rv.headers.get('Content-type'), rv.headers
-    _test_vector_layer(rv.file('xlsx'), 'XLSX')
+    layer = _test_vector_layer(rv.file('xlsx'), 'XLSX')
+    assert layer.fields().names() == ['gml_id', 'id', 'name']
 
 
 def test_getfeature_csv(client):
@@ -156,7 +165,8 @@ def test_getfeature_csv(client):
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
     assert 'text/csv' in rv.headers.get('Content-type'), rv.headers
-    _test_vector_layer(rv.file('csv'), 'CSV')
+    layer = _test_vector_layer(rv.file('csv'), 'CSV')
+    assert layer.fields().names() == ['gml_id', 'id', 'name']
 
 
 def test_getfeature_shapefile(client):
@@ -173,7 +183,8 @@ def test_getfeature_shapefile(client):
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
     assert "application/x-zipped-shp" in rv.headers.get('Content-type'), rv.headers
-    _test_vector_layer('/vsizip/' + rv.file('zip'), 'ESRI Shapefile')
+    layer = _test_vector_layer('/vsizip/' + rv.file('zip'), 'ESRI Shapefile')
+    assert layer.fields().names() == ['gml_id', 'id', 'name']
 
 
 def test_getfeature_tab(client):
@@ -190,7 +201,8 @@ def test_getfeature_tab(client):
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
     assert 'application/x-zipped-tab' in rv.headers.get('Content-type'), rv.headers
-    _test_vector_layer('/vsizip/' + rv.file('zip') + '/lines.tab', 'MapInfo File')
+    layer = _test_vector_layer('/vsizip/' + rv.file('zip') + '/lines.tab', 'MapInfo File')
+    assert layer.fields().names() == ['gml_id', 'id', 'name']
 
 
 def test_getfeature_mif(client):
@@ -207,4 +219,22 @@ def test_getfeature_mif(client):
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
     assert 'application/x-zipped-mif' in rv.headers.get('Content-type'), rv.headers
-    _test_vector_layer('/vsizip/' + rv.file('zip') + '/lines.mif', 'MapInfo File')
+    layer = _test_vector_layer('/vsizip/' + rv.file('zip') + '/lines.mif', 'MapInfo File')
+    assert layer.fields().names() == ['gml_id', 'id', 'name']
+
+
+def test_getfeature_layer_name_with_accent(client):
+    """ Test a layer name with accent. """
+    query_string = (
+        "?"
+        "SERVICE=WFS&"
+        "VERSION=1.1.0&"
+        "REQUEST=GetFeature&"
+        "TYPENAME=éàIncê&"
+        "OUTPUTFORMAT=CSV&"
+        "MAP={}"
+    ).format(PROJECT)
+    rv = client.get(query_string, PROJECT)
+    assert rv.status_code == 200
+    assert 'text/csv' in rv.headers.get('Content-type'), rv.headers
+    assert 'attachment; filename="éàIncê.csv"' in rv.headers.get('Content-Disposition')
