@@ -75,7 +75,11 @@ WFSFormats = {
         'filenameExt': 'gpx',
         'forceCRS': 'EPSG:4326',
         'ogrProvider': 'GPX',
-        'ogrDatasourceOptions': ['GPX_USE_EXTENSIONS=YES'],
+        'ogrDatasourceOptions': [
+            'GPX_USE_EXTENSIONS=YES',
+            'GPX_EXTENSIONS_NS=ogr',
+            'GPX_EXTENSION_NS_URL=http://osgeo.org/gdal',
+        ],
         'zip': False,
         'extToZip': []
     },

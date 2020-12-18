@@ -77,7 +77,6 @@ def test_getfeature_gpkg(client):
     assert layer.fields().names() == ['fid', 'gml_id', 'id', 'name']
 
 
-@pytest.mark.xfail
 def test_getfeature_gpx(client):
     """ Test GetFeature as GPX. """
     query_string = (
@@ -92,8 +91,12 @@ def test_getfeature_gpx(client):
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
     assert 'application/gpx+xml' in rv.headers.get('Content-type'), rv.headers
-    layer = _test_vector_layer(rv.file('gpx'), 'GPX')
-    assert layer.fields().names() == ['gml_id', 'id', 'name']
+
+    # Lines is translated as routes
+    layer = _test_vector_layer(rv.file('gpx') + '|layername=routes', 'GPX')
+    assert layer.fields().names() == [
+        'name', 'cmt', 'desc', 'src', 'link1_href', 'link1_text', 'link1_type', 'link2_href', 'link2_text',
+        'link2_type', 'number', 'type', 'ogr_gml_id', 'ogr_id']
 
 
 def test_getfeature_ods(client):
