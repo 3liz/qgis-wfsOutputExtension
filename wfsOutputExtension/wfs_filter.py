@@ -8,20 +8,20 @@ import time
 import traceback
 
 from os import makedirs
-from os.path import join, exists, splitext
+from os.path import exists, join, splitext
 from sys import exc_info
 from xml.dom import minidom
 
-from qgis.PyQt.QtCore import QFile, QTemporaryFile
 from qgis.core import (
     Qgis,
-    QgsMessageLog,
-    QgsVectorLayer,
-    QgsVectorFileWriter,
     QgsCoordinateReferenceSystem,
     QgsCoordinateTransform,
+    QgsMessageLog,
     QgsProject,
+    QgsVectorFileWriter,
+    QgsVectorLayer,
 )
+from qgis.PyQt.QtCore import QFile, QTemporaryFile
 from qgis.server import QgsServerFilter
 
 WFSFormats = {
