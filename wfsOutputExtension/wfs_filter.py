@@ -1,7 +1,6 @@
-__copyright__ = 'Copyright 2020, 3Liz'
+__copyright__ = 'Copyright 2021, 3Liz'
 __license__ = 'GPL version 3'
 __email__ = 'info@3liz.org'
-__revision__ = '$Format:%H$'
 
 import tempfile
 import time
@@ -20,6 +19,7 @@ from qgis.core import (
     QgsProject,
     QgsVectorFileWriter,
     QgsVectorLayer,
+    QgsWkbTypes,
 )
 from qgis.PyQt.QtCore import QFile, QTemporaryFile
 from qgis.server import QgsServerFilter
@@ -32,7 +32,14 @@ WFSFormats = {
         'ogrProvider': 'ESRI Shapefile',
         'ogrDatasourceOptions': None,
         'zip': True,
-        'extToZip': ['shx', 'dbf', 'prj']
+        'extToZip': ['shx', 'dbf', 'prj'],
+        'geom': [
+            QgsWkbTypes.Point,
+            QgsWkbTypes.LineGeometry,
+            QgsWkbTypes.Polygon,
+            QgsWkbTypes.NullGeometry,
+            QgsWkbTypes.UnknownGeometry,
+        ],
     },
     'tab': {
         'contentType': 'application/x-zipped-tab',
@@ -41,7 +48,14 @@ WFSFormats = {
         'ogrProvider': 'Mapinfo File',
         'ogrDatasourceOptions': None,
         'zip': True,
-        'extToZip': ['dat', 'map', 'id']
+        'extToZip': ['dat', 'map', 'id'],
+        'geom': [
+            QgsWkbTypes.Point,
+            QgsWkbTypes.LineGeometry,
+            QgsWkbTypes.Polygon,
+            QgsWkbTypes.NullGeometry,
+            QgsWkbTypes.UnknownGeometry,
+        ],
     },
     'mif': {
         'contentType': 'application/x-zipped-mif',
@@ -50,7 +64,14 @@ WFSFormats = {
         'ogrProvider': 'Mapinfo File',
         'ogrDatasourceOptions': ['FORMAT=MIF'],
         'zip': True,
-        'extToZip': ['mid']
+        'extToZip': ['mid'],
+        'geom': [
+            QgsWkbTypes.Point,
+            QgsWkbTypes.LineGeometry,
+            QgsWkbTypes.Polygon,
+            QgsWkbTypes.NullGeometry,
+            QgsWkbTypes.UnknownGeometry,
+        ],
     },
     'kml': {
         'contentType': 'application/vnd.google-earth.kml+xml',
@@ -59,7 +80,14 @@ WFSFormats = {
         'ogrProvider': 'KML',
         'ogrDatasourceOptions': None,
         'zip': False,
-        'extToZip': []
+        'extToZip': [],
+        'geom': [
+            QgsWkbTypes.Point,
+            QgsWkbTypes.LineGeometry,
+            QgsWkbTypes.Polygon,
+            QgsWkbTypes.NullGeometry,
+            QgsWkbTypes.UnknownGeometry,
+        ],
     },
     'gpkg': {
         'contentType': 'application/geopackage+vnd.sqlite3',
@@ -68,7 +96,14 @@ WFSFormats = {
         'ogrProvider': 'GPKG',
         'ogrDatasourceOptions': None,
         'zip': False,
-        'extToZip': []
+        'extToZip': [],
+        'geom': [
+            QgsWkbTypes.Point,
+            QgsWkbTypes.LineGeometry,
+            QgsWkbTypes.Polygon,
+            QgsWkbTypes.NullGeometry,
+            QgsWkbTypes.UnknownGeometry,
+        ],
     },
     'gpx': {
         'contentType': 'application/gpx+xml',
@@ -81,7 +116,11 @@ WFSFormats = {
             'GPX_EXTENSION_NS_URL=http://osgeo.org/gdal',
         ],
         'zip': False,
-        'extToZip': []
+        'extToZip': [],
+        'geom': [
+            QgsWkbTypes.Point,
+            QgsWkbTypes.LineGeometry,
+        ],
     },
     'ods': {
         'contentType': 'application/vnd.oasis.opendocument.spreadsheet',
@@ -90,7 +129,14 @@ WFSFormats = {
         'ogrProvider': 'ODS',
         'ogrDatasourceOptions': None,
         'zip': False,
-        'extToZip': []
+        'extToZip': [],
+        'geom': [
+            QgsWkbTypes.Point,
+            QgsWkbTypes.LineGeometry,
+            QgsWkbTypes.Polygon,
+            QgsWkbTypes.NullGeometry,
+            QgsWkbTypes.UnknownGeometry,
+        ],
     },
     'xlsx': {
         'contentType': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -99,7 +145,14 @@ WFSFormats = {
         'ogrProvider': 'XLSX',
         'ogrDatasourceOptions': None,
         'zip': False,
-        'extToZip': []
+        'extToZip': [],
+        'geom': [
+            QgsWkbTypes.Point,
+            QgsWkbTypes.LineGeometry,
+            QgsWkbTypes.Polygon,
+            QgsWkbTypes.NullGeometry,
+            QgsWkbTypes.UnknownGeometry,
+        ],
     },
     'csv': {
         'contentType': 'text/csv',
@@ -108,7 +161,14 @@ WFSFormats = {
         'ogrProvider': 'CSV',
         'ogrDatasourceOptions': None,
         'zip': False,
-        'extToZip': []
+        'extToZip': [],
+        'geom': [
+            QgsWkbTypes.Point,
+            QgsWkbTypes.LineGeometry,
+            QgsWkbTypes.Polygon,
+            QgsWkbTypes.NullGeometry,
+            QgsWkbTypes.UnknownGeometry,
+        ],
     }
 }
 
@@ -370,6 +430,8 @@ class WFSFilter(QgsServerFilter):
 
         if request == 'GETCAPABILITIES':
             data = handler.body().data()
+            print('GET CAPABILITIES')
+            print(data)
             dom = minidom.parseString(data)
             ver = dom.documentElement.attributes['version'].value
             if ver == '1.0.0':
@@ -392,6 +454,24 @@ class WFSFilter(QgsServerFilter):
                             if paramNode.attributes['name'].value != 'outputFormat':
                                 continue
                             for k in WFSFormats.keys():
+                                # if WFSFormats.get(k).get('geom')
+                                v_node = dom.createElement('ows:Value')
+                                v_text = dom.createTextNode(k.upper())
+                                v_node.appendChild(v_text)
+                                paramNode.appendChild(v_node)
+                for opmNode in dom.getElementsByTagName('ows:OperationsMetadata'):
+                    for opNode in opmNode.getElementsByTagName('ows:Operation'):
+                        if 'name' not in opNode.attributes:
+                            continue
+                        if opNode.attributes['name'].value != 'GetFeature':
+                            continue
+                        for paramNode in opNode.getElementsByTagName('ows:Parameter'):
+                            if 'name' not in paramNode.attributes:
+                                continue
+                            if paramNode.attributes['name'].value != 'outputFormat':
+                                continue
+                            for k in WFSFormats.keys():
+                                # if WFSFormats.get(k).get('geom')
                                 v_node = dom.createElement('ows:Value')
                                 v_text = dom.createTextNode(k.upper())
                                 v_node.appendChild(v_text)

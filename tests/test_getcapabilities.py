@@ -27,3 +27,26 @@ def test_getcapabilties(client):
     expected = ['SHP', 'KML', 'GPKG']
     for output_format in expected:
         assert "<ows:Value>{}</ows:Value>".format(output_format) in data, output_format
+
+
+def test_getcapabilties_geom(client):
+    """ Test GetCapabilities with polygon layer. """
+    query_string = (
+        "?"
+        "SERVICE=WFS&"
+        "VERSION=1.1.0&"
+        "REQUEST=GetCapabilities&"
+        "MAP=polygon.qgs"
+    ).format(PROJECT)
+    rv = client.get(query_string, PROJECT)
+    assert rv.status_code == 200
+    assert rv.headers.get('Content-Type', '').find('text/xml') == 0
+
+    data = rv.content.decode('utf-8')
+
+    expected = ['SHP', 'KML', 'GPKG']
+    for output_format in expected:
+        assert "<ows:Value>{}</ows:Value>".format(output_format) in data, output_format
+
+    print(data)
+    assert False
