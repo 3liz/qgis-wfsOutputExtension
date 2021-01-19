@@ -1,6 +1,7 @@
 import logging
 
 from qgis.core import QgsVectorLayer
+from qgis.PyQt.QtCore import NULL
 
 LOGGER = logging.getLogger('server')
 
@@ -96,6 +97,15 @@ def test_getfeature_gpx(client):
     assert layer.fields().names() == [
         'name', 'cmt', 'desc', 'src', 'link1_href', 'link1_text', 'link1_type', 'link2_href', 'link2_text',
         'link2_type', 'number', 'type', 'ogr_gml_id', 'ogr_id']
+
+    # GPX is a specific format with some pre-defined field names
+    # Checking "name"
+    assert layer.fields().indexFromName('name') == 0
+    assert layer.uniqueValues(0) == {'éù%@ > 1', '(]~€ > 2', '<![CDATA[Line < 3]]>', '<![CDATA[Line < 4]]>'}
+
+    # Checking "desc"
+    assert layer.fields().indexFromName('desc') == 2
+    assert layer.uniqueValues(2) == {NULL}
 
 
 def test_getfeature_ods(client):
