@@ -16,7 +16,6 @@ from qgis.core import (
     Qgis,
     QgsCoordinateReferenceSystem,
     QgsCoordinateTransform,
-    QgsMessageLog,
     QgsProject,
     QgsVectorFileWriter,
     QgsVectorLayer,
@@ -24,112 +23,16 @@ from qgis.core import (
 from qgis.PyQt.QtCore import QFile, QTemporaryFile
 from qgis.server import QgsServerFilter
 
-WFSFormats = {
-    'shp': {
-        'contentType': 'application/x-zipped-shp',
-        'filenameExt': 'shp',
-        'forceCRS': None,
-        'ogrProvider': 'ESRI Shapefile',
-        'ogrDatasourceOptions': None,
-        'zip': True,
-        'extToZip': ['shx', 'dbf', 'prj']
-    },
-    'tab': {
-        'contentType': 'application/x-zipped-tab',
-        'filenameExt': 'tab',
-        'forceCRS': None,
-        'ogrProvider': 'Mapinfo File',
-        'ogrDatasourceOptions': None,
-        'zip': True,
-        'extToZip': ['dat', 'map', 'id']
-    },
-    'mif': {
-        'contentType': 'application/x-zipped-mif',
-        'filenameExt': 'mif',
-        'forceCRS': None,
-        'ogrProvider': 'Mapinfo File',
-        'ogrDatasourceOptions': ['FORMAT=MIF'],
-        'zip': True,
-        'extToZip': ['mid']
-    },
-    'kml': {
-        'contentType': 'application/vnd.google-earth.kml+xml',
-        'filenameExt': 'kml',
-        'forceCRS': 'EPSG:4326',
-        'ogrProvider': 'KML',
-        'ogrDatasourceOptions': None,
-        'zip': False,
-        'extToZip': []
-    },
-    'gpkg': {
-        'contentType': 'application/geopackage+vnd.sqlite3',
-        'filenameExt': 'gpkg',
-        'forceCRS': None,
-        'ogrProvider': 'GPKG',
-        'ogrDatasourceOptions': None,
-        'zip': False,
-        'extToZip': []
-    },
-    'gpx': {
-        'contentType': 'application/gpx+xml',
-        'filenameExt': 'gpx',
-        'forceCRS': 'EPSG:4326',
-        'ogrProvider': 'GPX',
-        'ogrDatasourceOptions': [
-            'GPX_USE_EXTENSIONS=YES',
-            'GPX_EXTENSIONS_NS=ogr',
-            'GPX_EXTENSION_NS_URL=http://osgeo.org/gdal',
-        ],
-        'zip': False,
-        'extToZip': []
-    },
-    'ods': {
-        'contentType': 'application/vnd.oasis.opendocument.spreadsheet',
-        'filenameExt': 'ods',
-        'forceCRS': None,
-        'ogrProvider': 'ODS',
-        'ogrDatasourceOptions': None,
-        'zip': False,
-        'extToZip': []
-    },
-    'xlsx': {
-        'contentType': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'filenameExt': 'xlsx',
-        'forceCRS': None,
-        'ogrProvider': 'XLSX',
-        'ogrDatasourceOptions': None,
-        'zip': False,
-        'extToZip': []
-    },
-    'csv': {
-        'contentType': 'text/csv',
-        'filenameExt': 'csv',
-        'forceCRS': None,
-        'ogrProvider': 'CSV',
-        'ogrDatasourceOptions': None,
-        'zip': False,
-        'extToZip': []
-    }
-}
-
-
-class Logger:
-
-    PLUGIN = 'wfsOutputExtension'
-
-    def info(self, message):
-        QgsMessageLog.logMessage(message, self.PLUGIN, Qgis.Info)
-
-    def critical(self, message):
-        QgsMessageLog.logMessage(message, self.PLUGIN, Qgis.Critical)
+from wfsOutputExtension.definitions import WFSFormats
+from wfsOutputExtension.logging import Logger, log_function
 
 
 class WFSFilter(QgsServerFilter):
 
+    @log_function
     def __init__(self, server_iface):
         super(WFSFilter, self).__init__(server_iface)
         self.logger = Logger()
-        self.logger.info('WFSFilter.init')
 
         self.format = None
         self.typename = ""
@@ -141,11 +44,10 @@ class WFSFilter(QgsServerFilter):
 
         # XXX Fix race-condition if multiple servers are run concurrently
         makedirs(self.temp_dir, exist_ok=True)
-        self.logger.info('WFSFilter.tempdir: {}'.format(self.temp_dir))
+        self.logger.info('tempdir : {}'.format(self.temp_dir))
 
+    @log_function
     def requestReady(self):
-        self.logger.info('WFSFilter.requestReady')
-
         self.format = None
         self.allgml = False
 
@@ -183,6 +85,7 @@ class WFSFilter(QgsServerFilter):
                     'Content-Disposition',
                     'attachment; filename="{}.{}"'.format(self.typename, format_dict['filenameExt']))
 
+    @log_function
     def sendResponse(self):
         # if format is null, nothing to do
         if not self.format:
@@ -225,6 +128,7 @@ class WFSFilter(QgsServerFilter):
             self.allgml = True
             self.send_output_file(handler)
 
+    @log_function
     def send_output_file(self, handler):
         format_dict = WFSFormats[self.format]
 
@@ -340,9 +244,8 @@ class WFSFilter(QgsServerFilter):
         self.logger.critical('Error no output file')
         return False
 
+    @log_function
     def responseComplete(self):
-        self.logger.info('WFSFilter.responseComplete')
-
         # Update the WFS capabilities
         # by adding ResultFormat to GetFeature
         handler = self.serverInterface().requestHandler()

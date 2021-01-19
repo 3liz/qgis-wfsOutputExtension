@@ -32,7 +32,7 @@ class WfsOutputExtensionServer:
     def __init__(self, serverIface):
         self.serverIface = serverIface
 
-        from .wfs_filter import WFSFilter
+        from .wfs_filter import WFSFilter  # NOQA ABS101
         serverIface.registerFilter(WFSFilter(serverIface), 50)
 
 
