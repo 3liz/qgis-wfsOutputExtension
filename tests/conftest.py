@@ -4,8 +4,12 @@ import logging
 import os
 import sys
 import tempfile
+import warnings
 
-import gdal
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
+    import gdal
+
 import lxml.etree
 import pytest
 
