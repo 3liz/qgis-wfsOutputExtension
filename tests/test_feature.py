@@ -12,10 +12,10 @@ __email__ = 'info@3liz.org'
 PROJECT = 'lines.qgs'
 
 
-def _test_vector_layer(file_path, storage, provider='ogr') -> QgsVectorLayer:
+def _test_vector_layer(file_path, storage, provider='ogr', count=4) -> QgsVectorLayer:
     layer = QgsVectorLayer(file_path, 'test', provider)
     assert layer.isValid()
-    assert layer.featureCount() == 4
+    assert layer.featureCount() == count
     assert layer.storageType() == storage, layer.storageType()
     return layer
 
@@ -250,3 +250,22 @@ def test_getfeature_layer_name_with_accent(client):
     assert rv.status_code == 200
     assert 'text/csv' in rv.headers.get('Content-type'), rv.headers
     assert 'attachment; filename="éàIncê.csv"' in rv.headers.get('Content-Disposition')
+
+
+def test_getfeature_geojson_with_selection(client):
+    """ Test GetFeature as GeoJSON with a selection. """
+    query_string = (
+        "?"
+        "SERVICE=WFS&"
+        "VERSION=1.1.0&"
+        "REQUEST=GetFeature&"
+        "TYPENAME=lines&"
+        "OUTPUTFORMAT=GeoJSON&"
+        "FEATUREID=lines.1,lines.2&"
+        "MAP={}"
+    ).format(PROJECT)
+    rv = client.get(query_string, PROJECT)
+    assert rv.status_code == 200
+    assert 'application/vnd.geo+json' in rv.headers.get('Content-Type'), rv.headers
+    layer = _test_vector_layer(rv.file('geojson'), 'GeoJSON', count=2)
+    assert layer.fields().names() == ['id', 'name']
