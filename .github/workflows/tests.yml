@@ -94,11 +94,13 @@ jobs:
       uses: ncipollo/release-action@v1.7.3
       with:
         bodyFile: release.md
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.BOT_HUB_TOKEN }}
 
     - name: Package the plugin and deploy it in the release
       run: >-
         qgis-plugin-ci
         release ${GITHUB_REF/refs\/tags\//}
-        --github-token ${{ secrets.GITHUB_TOKEN }}
+        --github-token ${{ secrets.BOT_HUB_TOKEN }}
+        --osgeo-username ${{ secrets.OSGEO_USERNAME }}
+        --osgeo-password ${{ secrets.OSGEO_PASSWORD }}
         --create-plugin-repo
