@@ -6,8 +6,8 @@ import tempfile
 import time
 import traceback
 
-from os import makedirs
-from os.path import exists, join, splitext
+from os import listdir, makedirs, remove
+from os.path import basename, exists, join, splitext
 from sys import exc_info
 from xml.dom import minidom
 
@@ -36,6 +36,7 @@ class WFSFilter(QgsServerFilter):
         self.format = None
         self.typename = ""
         self.filename = ""
+        self.base_name_target = None
         self.allgml = False
 
         self.temp_dir = join(tempfile.gettempdir(), 'QGIS_WfsOutputExtension')
@@ -146,6 +147,7 @@ class WFSFilter(QgsServerFilter):
         temporary.open()
         output_file = temporary.fileName()
         temporary.remove()  # Fix issue #18
+        self.base_name_target = basename(splitext(output_file)[0])
 
         try:
             # create save options
@@ -266,8 +268,17 @@ class WFSFilter(QgsServerFilter):
                     f.write('</wfs:FeatureCollection>')
                 self.send_output_file(handler)
 
+                # Find all files associated with the request and remove them
+                for file in listdir(self.temp_dir):
+                    if file.startswith(self.filename):  # GML, GFS
+                        remove(join(self.temp_dir, file))
+                    if file.startswith(self.base_name_target):  # Target extension, ZIP
+                        remove(join(self.temp_dir, file))
+
             self.format = None
             self.allgml = False
+            self.filename = None
+            self.base_name_target = None
             return
 
         if request == 'GETCAPABILITIES':
