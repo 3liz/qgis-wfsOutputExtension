@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v1.5.2 - 2021-XX-YY
+
+* Remove all files associated with a request after the process
+* Add more unit tests
+* Switch from Travis to GitHub Actions
+
 ## v1.5.1 - 2021-01-19
 
 * Fix error when writing and closing file with QTemporaryFile
