@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## v1.5.2 - 2021-XX-YY
+## v1.5.2 - 2021-02-26
 
 * Remove all files associated with a request after the process
 * Add more unit tests
