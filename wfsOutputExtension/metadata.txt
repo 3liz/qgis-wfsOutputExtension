@@ -17,6 +17,6 @@ changelog=changelog
 category=Server
 icon=icon.png
 
-experimental=True
+experimental=False
 deprecated=False
 server=True
