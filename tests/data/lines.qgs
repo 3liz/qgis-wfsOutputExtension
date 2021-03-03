@@ -1,4 +1,4 @@
-<qgis projectname="" version="3.10.8-A Coruña">
+<qgis projectname="" version="3.10.14-A Coruña">
   <homePath path=""></homePath>
   <title></title>
   <autotransaction active="0"></autotransaction>
@@ -41,9 +41,9 @@
     <units>degrees</units>
     <extent>
       <xmin>3.75902173913043391</xmin>
-      <ymin>43.45432608695651311</ymin>
+      <ymin>43.44412466515555593</ymin>
       <xmax>3.96902173913043477</xmax>
-      <ymax>43.66432608695652107</ymax>
+      <ymax>43.65412466515556389</ymax>
     </extent>
     <rotation>0</rotation>
     <destinationsrs>
@@ -177,7 +177,9 @@
         <rotation></rotation>
         <sizescale></sizescale>
       </renderer-v2>
-      <customproperties></customproperties>
+      <customproperties>
+        <property key="dualview/previewExpressions" value="&quot;name&quot;"></property>
+      </customproperties>
       <blendMode>0</blendMode>
       <featureBlendMode>0</featureBlendMode>
       <layerOpacity>1</layerOpacity>
@@ -202,31 +204,47 @@
             </config>
           </editWidget>
         </field>
+        <field name="comment">
+          <editWidget type="">
+            <config>
+              <Option></Option>
+            </config>
+          </editWidget>
+        </field>
       </fieldConfiguration>
       <aliases>
         <alias field="id" index="0" name=""></alias>
         <alias field="name" index="1" name=""></alias>
+        <alias field="comment" index="2" name=""></alias>
       </aliases>
       <excludeAttributesWMS></excludeAttributesWMS>
       <excludeAttributesWFS></excludeAttributesWFS>
       <defaults>
         <default applyOnUpdate="0" expression="" field="id"></default>
         <default applyOnUpdate="0" expression="" field="name"></default>
+        <default applyOnUpdate="0" expression="" field="comment"></default>
       </defaults>
       <constraints>
         <constraint constraints="0" exp_strength="0" field="id" notnull_strength="0" unique_strength="0"></constraint>
         <constraint constraints="0" exp_strength="0" field="name" notnull_strength="0" unique_strength="0"></constraint>
+        <constraint constraints="0" exp_strength="0" field="comment" notnull_strength="0" unique_strength="0"></constraint>
       </constraints>
       <constraintExpressions>
         <constraint desc="" exp="" field="id"></constraint>
         <constraint desc="" exp="" field="name"></constraint>
+        <constraint desc="" exp="" field="comment"></constraint>
       </constraintExpressions>
       <expressionfields></expressionfields>
       <attributeactions>
         <defaultAction key="Canvas" value="{00000000-0000-0000-0000-000000000000}"></defaultAction>
       </attributeactions>
       <attributetableconfig actionWidgetStyle="dropDown" sortExpression="" sortOrder="0">
-        <columns></columns>
+        <columns>
+          <column hidden="0" name="id" type="field" width="-1"></column>
+          <column hidden="0" name="name" type="field" width="-1"></column>
+          <column hidden="1" type="actions" width="-1"></column>
+          <column hidden="0" name="comment" type="field" width="-1"></column>
+        </columns>
       </attributetableconfig>
       <conditionalstyles>
         <rowstyles></rowstyles>
@@ -243,7 +261,7 @@
       <editable></editable>
       <labelOnTop></labelOnTop>
       <widgets></widgets>
-      <previewExpression></previewExpression>
+      <previewExpression>"name"</previewExpression>
       <mapTip></mapTip>
     </maplayer>
     <maplayer autoRefreshEnabled="0" autoRefreshTime="0" geometry="Line" hasScaleBasedVisibilityFlag="0" labelsEnabled="0" maxScale="0" minScale="1e+08" readOnly="0" refreshOnNotifyEnabled="0" refreshOnNotifyMessage="" simplifyAlgorithm="0" simplifyDrawingHints="1" simplifyDrawingTol="1" simplifyLocal="1" simplifyMaxScale="1" styleCategories="AllStyleCategories" type="vector" wkbType="LineString">
@@ -345,7 +363,11 @@
         <rotation></rotation>
         <sizescale></sizescale>
       </renderer-v2>
-      <customproperties></customproperties>
+      <customproperties>
+        <property key="dualview/previewExpressions">
+          <value>"name"</value>
+        </property>
+      </customproperties>
       <blendMode>0</blendMode>
       <featureBlendMode>0</featureBlendMode>
       <layerOpacity>1</layerOpacity>
@@ -370,31 +392,47 @@
             </config>
           </editWidget>
         </field>
+        <field name="comment">
+          <editWidget type="">
+            <config>
+              <Option></Option>
+            </config>
+          </editWidget>
+        </field>
       </fieldConfiguration>
       <aliases>
         <alias field="id" index="0" name=""></alias>
         <alias field="name" index="1" name=""></alias>
+        <alias field="comment" index="2" name=""></alias>
       </aliases>
       <excludeAttributesWMS></excludeAttributesWMS>
       <excludeAttributesWFS></excludeAttributesWFS>
       <defaults>
         <default applyOnUpdate="0" expression="" field="id"></default>
         <default applyOnUpdate="0" expression="" field="name"></default>
+        <default applyOnUpdate="0" expression="" field="comment"></default>
       </defaults>
       <constraints>
         <constraint constraints="0" exp_strength="0" field="id" notnull_strength="0" unique_strength="0"></constraint>
         <constraint constraints="0" exp_strength="0" field="name" notnull_strength="0" unique_strength="0"></constraint>
+        <constraint constraints="0" exp_strength="0" field="comment" notnull_strength="0" unique_strength="0"></constraint>
       </constraints>
       <constraintExpressions>
         <constraint desc="" exp="" field="id"></constraint>
         <constraint desc="" exp="" field="name"></constraint>
+        <constraint desc="" exp="" field="comment"></constraint>
       </constraintExpressions>
       <expressionfields></expressionfields>
       <attributeactions>
         <defaultAction key="Canvas" value="{00000000-0000-0000-0000-000000000000}"></defaultAction>
       </attributeactions>
       <attributetableconfig actionWidgetStyle="dropDown" sortExpression="" sortOrder="0">
-        <columns></columns>
+        <columns>
+          <column hidden="0" name="id" type="field" width="-1"></column>
+          <column hidden="0" name="name" type="field" width="-1"></column>
+          <column hidden="0" name="comment" type="field" width="-1"></column>
+          <column hidden="1" type="actions" width="-1"></column>
+        </columns>
       </attributetableconfig>
       <conditionalstyles>
         <rowstyles></rowstyles>
@@ -411,7 +449,7 @@
       <editable></editable>
       <labelOnTop></labelOnTop>
       <widgets></widgets>
-      <previewExpression></previewExpression>
+      <previewExpression>"name"</previewExpression>
       <mapTip></mapTip>
     </maplayer>
   </projectlayers>
