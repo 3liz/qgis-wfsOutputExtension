@@ -170,7 +170,13 @@ class WFSFilter(QgsServerFilter):
 
             # write file
             # noinspection PyUnresolvedReferences
-            if Qgis.QGIS_VERSION_INT >= 31003:
+            if Qgis.QGIS_VERSION_INT >= 32000:
+                write_result, error_message, _, _ = QgsVectorFileWriter.writeAsVectorFormatV3(
+                    output_layer,
+                    output_file,
+                    QgsProject.instance().transformContext(),
+                    options)
+            elif Qgis.QGIS_VERSION_INT >= 31003:
                 write_result, error_message = QgsVectorFileWriter.writeAsVectorFormatV2(
                     output_layer,
                     output_file,
