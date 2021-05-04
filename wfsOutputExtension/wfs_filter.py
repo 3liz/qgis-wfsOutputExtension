@@ -85,7 +85,6 @@ class WFSFilter(QgsServerFilter):
                     'Content-Disposition',
                     'attachment; filename="{}.{}"'.format(self.typename, format_dict['filenameExt']))
 
-    @log_function
     def sendResponse(self):
         # if format is null, nothing to do
         if not self.format:

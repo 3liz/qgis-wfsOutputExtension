@@ -4,6 +4,10 @@ wfsOutputExtension.zip
 # C extensions
 *.so
 
+# Python
+.venv/
+venv/
+
 # Packages
 *.egg
 *.egg-info
