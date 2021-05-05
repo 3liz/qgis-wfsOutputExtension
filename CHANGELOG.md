@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## v1.5.3 - 2021-05-05
+
+* Upgrade the plugin as not experimental in its metadata.txt
+* Upgrade PyQGIS functions which are deprecated in newer QGIS versions
+* Remove some excessive logging
+* Add more unit tests about trailing "0" in data
+
 ## v1.5.2 - 2021-02-26
 
 * Remove all files associated with a request after the process
