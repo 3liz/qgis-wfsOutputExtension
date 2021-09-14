@@ -4,11 +4,9 @@ __email__ = 'info@3liz.org'
 
 import tempfile
 import time
-import traceback
 
 from os import listdir, makedirs, remove
 from os.path import basename, exists, join, splitext
-from sys import exc_info
 from xml.dom import minidom
 
 from qgis.core import (
@@ -42,9 +40,9 @@ class WFSFilter(QgsServerFilter):
         self.temp_dir = join(tempfile.gettempdir(), 'QGIS_WfsOutputExtension')
         # self.temp_dir = '/src/'  # Use ONLY in debug for docker
 
-        # XXX Fix race-condition if multiple servers are run concurrently
+        # Fix race-condition if multiple servers are run concurrently
         makedirs(self.temp_dir, exist_ok=True)
-        self.logger.info('tempdir : {}'.format(self.temp_dir))
+        self.logger.info('temporary directory is {}'.format(self.temp_dir))
 
     @log_function
     def requestReady(self):
@@ -194,10 +192,7 @@ class WFSFilter(QgsServerFilter):
 
         except Exception as e:
             handler.appendBody(b'')
-            exc_type, _, exc_tb = exc_info()
-            self.logger.critical(str(e))
-            self.logger.critical(exc_type)
-            self.logger.critical('\n'.join(traceback.format_tb(exc_tb)))
+            Logger.log_exception(e)
             return False
 
         if format_dict['zip']:
