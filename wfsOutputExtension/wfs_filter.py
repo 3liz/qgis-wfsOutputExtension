@@ -286,31 +286,37 @@ class WFSFilter(QgsServerFilter):
         if request == 'GETCAPABILITIES':
             data = handler.body().data()
             dom = minidom.parseString(data)
-            ver = dom.documentElement.attributes['version'].value
-            if ver == '1.0.0':
-                for gfNode in dom.getElementsByTagName('GetFeature'):
-                    _ = gfNode
-                    for rfNode in dom.getElementsByTagName('ResultFormat'):
+
+            if dom.documentElement.attributes['version'].value == '1.0.0':
+
+                for _ in dom.getElementsByTagName('GetFeature'):
+                    for result_format_node in dom.getElementsByTagName('ResultFormat'):
                         for output in OutputFormats:
-                            f_node = dom.createElement(output.filename_ext.upper())
-                            rfNode.appendChild(f_node)
+                            format_node = dom.createElement(output.filename_ext.upper())
+                            result_format_node.appendChild(format_node)
+
             else:
-                for opmNode in dom.getElementsByTagName('ows:OperationsMetadata'):
-                    for opNode in opmNode.getElementsByTagName('ows:Operation'):
-                        if 'name' not in opNode.attributes:
+                for operation_metadata_node in dom.getElementsByTagName('ows:OperationsMetadata'):
+                    for operation_node in operation_metadata_node.getElementsByTagName('ows:Operation'):
+                        if 'name' not in operation_node.attributes:
                             continue
-                        if opNode.attributes['name'].value != 'GetFeature':
+
+                        if operation_node.attributes['name'].value != 'GetFeature':
                             continue
-                        for paramNode in opNode.getElementsByTagName('ows:Parameter'):
-                            if 'name' not in paramNode.attributes:
+
+                        for param_node in operation_node.getElementsByTagName('ows:Parameter'):
+                            if 'name' not in param_node.attributes:
                                 continue
-                            if paramNode.attributes['name'].value != 'outputFormat':
+
+                            if param_node.attributes['name'].value != 'outputFormat':
                                 continue
+
                             for output in OutputFormats:
-                                v_node = dom.createElement('ows:Value')
-                                v_text = dom.createTextNode(output.filename_ext.upper())
-                                v_node.appendChild(v_text)
-                                paramNode.appendChild(v_node)
+                                value_node = dom.createElement('ows:Value')
+                                text_node = dom.createTextNode(output.filename_ext.upper())
+                                value_node.appendChild(text_node)
+                                param_node.appendChild(value_node)
+
             handler.clearBody()
             handler.appendBody(dom.toxml('utf-8'))
             return
