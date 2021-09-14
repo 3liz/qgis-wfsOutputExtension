@@ -20,7 +20,7 @@ from qgis.core import (
 from qgis.PyQt.QtCore import QFile, QTemporaryFile
 from qgis.server import QgsServerFilter
 
-from wfsOutputExtension.definitions import WFSFormats
+from wfsOutputExtension.definitions import OutputFormats
 from wfsOutputExtension.logging import Logger, log_function
 
 
@@ -63,25 +63,27 @@ class WFSFilter(QgsServerFilter):
             return
 
         # verifying format
-        formats = [k.lower() for k in WFSFormats.keys()]
         output_format = params.get('OUTPUTFORMAT', '').lower()
-        if output_format in formats:
-            handler.setParameter('OUTPUTFORMAT', 'GML2')
-            self.format = output_format
-            self.typename = params.get('TYPENAME', '')
-            self.filename = 'gml_features_{}'.format(time.time())
 
-            # set headers
-            format_dict = WFSFormats[self.format]
-            handler.clear()
-            handler.setResponseHeader('Content-Type', format_dict['contentType'])
-            if format_dict['zip']:
-                handler.setResponseHeader(
-                    'Content-Disposition', 'attachment; filename="{}.zip"'.format(self.typename))
-            else:
-                handler.setResponseHeader(
-                    'Content-Disposition',
-                    'attachment; filename="{}.{}"'.format(self.typename, format_dict['filenameExt']))
+        format_definition = OutputFormats.find(output_format)
+        if not format_definition:
+            return
+
+        handler.setParameter('OUTPUTFORMAT', 'GML2')
+        self.format = output_format
+        self.typename = params.get('TYPENAME', '')
+        self.filename = 'gml_features_{}'.format(time.time())
+
+        # set headers
+        handler.clear()
+        handler.setResponseHeader('Content-Type', format_definition.content_type)
+        if format_definition.zip:
+            handler.setResponseHeader(
+                'Content-Disposition', 'attachment; filename="{}.zip"'.format(self.typename))
+        else:
+            handler.setResponseHeader(
+                'Content-Disposition',
+                'attachment; filename="{}.{}"'.format(self.typename, format_definition.filename_ext))
 
     def sendResponse(self):
         # if format is null, nothing to do
@@ -103,20 +105,20 @@ class WFSFilter(QgsServerFilter):
                 data = re.sub(r'xsi:schemaLocation=\".*\"', 'xsi:schemaLocation=""', data)
                 f.write(data.encode('utf8'))
 
-        format_dict = WFSFormats[self.format]
+        format_definition = OutputFormats.find(self.format)
 
         # change the headers
         # update content-type and content-disposition
         if not handler.headersSent():
             handler.clear()
-            handler.setResponseHeader('Content-type', format_dict['contentType'])
-            if format_dict['zip']:
+            handler.setResponseHeader('Content-type', format_definition.content_type)
+            if format_definition.zip:
                 handler.setResponseHeader(
                     'Content-Disposition', 'attachment; filename="{}.zip"'.format(self.typename))
             else:
                 handler.setResponseHeader(
                     'Content-Disposition',
-                    'attachment; filename="{}.{}"'.format(self.typename, format_dict['filenameExt']))
+                    'attachment; filename="{}.{}"'.format(self.typename, format_definition.filename_ext))
         else:
             handler.clearBody()
 
@@ -127,7 +129,7 @@ class WFSFilter(QgsServerFilter):
 
     @log_function
     def send_output_file(self, handler):
-        format_dict = WFSFormats[self.format]
+        format_definition = OutputFormats.find(self.format)
 
         # read the GML
         gml_path = join(self.temp_dir, '{}.gml'.format(self.filename))
@@ -140,7 +142,7 @@ class WFSFilter(QgsServerFilter):
 
         # Temporary file where to write the output
         temporary = QTemporaryFile(
-            join(self.temp_dir, 'to-{}-XXXXXX.{}'.format(self.format, format_dict['filenameExt'])))
+            join(self.temp_dir, 'to-{}-XXXXXX.{}'.format(self.format, format_definition.filename_ext)))
         temporary.open()
         output_file = temporary.fileName()
         temporary.remove()  # Fix issue #18
@@ -150,20 +152,20 @@ class WFSFilter(QgsServerFilter):
             # create save options
             options = QgsVectorFileWriter.SaveVectorOptions()
             # driver name
-            options.driverName = format_dict['ogrProvider']
+            options.driverName = format_definition.ogr_provider
             # file encoding
             options.fileEncoding = 'utf-8'
 
             # coordinate transformation
-            if format_dict['forceCRS']:
+            if format_definition.force_crs:
                 options.ct = QgsCoordinateTransform(
                     output_layer.crs(),
-                    QgsCoordinateReferenceSystem(format_dict['forceCRS']),
+                    QgsCoordinateReferenceSystem(format_definition.force_crs),
                     QgsProject.instance())
 
             # datasource options
-            if format_dict['ogrDatasourceOptions']:
-                options.datasourceOptions = format_dict['ogrDatasourceOptions']
+            if format_definition.ogr_datasource_options:
+                options.datasourceOptions = format_definition.ogr_datasource_options
 
             # write file
             # noinspection PyUnresolvedReferences
@@ -195,7 +197,7 @@ class WFSFilter(QgsServerFilter):
             Logger.log_exception(e)
             return False
 
-        if format_dict['zip']:
+        if format_definition.zip:
             # compress files
             import zipfile
             try:
@@ -210,13 +212,13 @@ class WFSFilter(QgsServerFilter):
             with zipfile.ZipFile(zip_file_path, 'w') as zf:
 
                 # Add the main file
-                arc_filename = '{}.{}'.format(self.typename, format_dict['filenameExt'])
+                arc_filename = '{}.{}'.format(self.typename, format_definition.filename_ext)
                 zf.write(
                     output_file,
                     compress_type=compression,
                     arcname=arc_filename)
 
-                for extension in format_dict['extToZip']:
+                for extension in format_definition.ext_to_zip:
                     file_path = join(self.temp_dir, '{}.{}'.format(base_filename, extension))
                     if exists(file_path):
                         arc_filename = '{}.{}'.format(self.typename, extension)
@@ -289,8 +291,8 @@ class WFSFilter(QgsServerFilter):
                 for gfNode in dom.getElementsByTagName('GetFeature'):
                     _ = gfNode
                     for rfNode in dom.getElementsByTagName('ResultFormat'):
-                        for k in WFSFormats.keys():
-                            f_node = dom.createElement(k.upper())
+                        for output in OutputFormats:
+                            f_node = dom.createElement(output.filename_ext.upper())
                             rfNode.appendChild(f_node)
             else:
                 for opmNode in dom.getElementsByTagName('ows:OperationsMetadata'):
@@ -304,9 +306,9 @@ class WFSFilter(QgsServerFilter):
                                 continue
                             if paramNode.attributes['name'].value != 'outputFormat':
                                 continue
-                            for k in WFSFormats.keys():
+                            for output in OutputFormats:
                                 v_node = dom.createElement('ows:Value')
-                                v_text = dom.createTextNode(k.upper())
+                                v_text = dom.createTextNode(output.filename_ext.upper())
                                 v_node.appendChild(v_text)
                                 paramNode.appendChild(v_node)
             handler.clearBody()
