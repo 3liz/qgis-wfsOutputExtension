@@ -9,6 +9,10 @@ def classFactory(iface):
     class Nothing:
 
         def __init__(self, iface):
+            """ In QGIS Desktop.
+
+            :param iface: The QGIS Desktop interface
+            """
             self.iface = iface
 
         def initGui(self):
@@ -26,19 +30,20 @@ def classFactory(iface):
 
 class WfsOutputExtensionServer:
     """Plugin for QGIS server
-    this plugin loads wfs filter"""
 
-    def __init__(self, serverIface):
-        self.serverIface = serverIface
+    This plugin loads wfs filter"""
+
+    def __init__(self, server_iface):
+        self.serverIface = server_iface
 
         from .wfs_filter import WFSFilter  # NOQA ABS101
-        serverIface.registerFilter(WFSFilter(serverIface), 50)
+        server_iface.registerFilter(WFSFilter(server_iface), 50)
 
 
-def serverClassFactory(serverIface):
+def serverClassFactory(server_iface):
     """Load wfsOutputExtensionServer class from file wfsOutputExtension.
 
-    :param serverIface: A QGIS Server interface instance.
-    :type serverIface: QgsServerInterface
+    :param server_iface: A QGIS Server interface instance.
+    :type server_iface: QgsServerInterface
     """
-    return WfsOutputExtensionServer(serverIface)
+    return WfsOutputExtensionServer(server_iface)

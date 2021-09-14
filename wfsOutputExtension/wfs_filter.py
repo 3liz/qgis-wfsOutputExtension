@@ -37,7 +37,7 @@ class WFSFilter(QgsServerFilter):
         self.typename = ""
         self.filename = ""
         self.base_name_target = None
-        self.allgml = False
+        self.all_gml = False
 
         self.temp_dir = join(tempfile.gettempdir(), 'QGIS_WfsOutputExtension')
         # self.temp_dir = '/src/'  # Use ONLY in debug for docker
@@ -49,7 +49,7 @@ class WFSFilter(QgsServerFilter):
     @log_function
     def requestReady(self):
         self.format = None
-        self.allgml = False
+        self.all_gml = False
 
         handler = self.serverInterface().requestHandler()
         params = handler.parameterMap()
@@ -66,10 +66,10 @@ class WFSFilter(QgsServerFilter):
 
         # verifying format
         formats = [k.lower() for k in WFSFormats.keys()]
-        oformat = params.get('OUTPUTFORMAT', '').lower()
-        if oformat in formats:
+        output_format = params.get('OUTPUTFORMAT', '').lower()
+        if output_format in formats:
             handler.setParameter('OUTPUTFORMAT', 'GML2')
-            self.format = oformat
+            self.format = output_format
             self.typename = params.get('TYPENAME', '')
             self.filename = 'gml_features_{}'.format(time.time())
 
@@ -124,7 +124,7 @@ class WFSFilter(QgsServerFilter):
 
         if data.rstrip().endswith('</wfs:FeatureCollection>'):
             # all the gml has been intercepted
-            self.allgml = True
+            self.all_gml = True
             self.send_output_file(handler)
 
     @log_function
@@ -266,7 +266,7 @@ class WFSFilter(QgsServerFilter):
             return
 
         if request == 'GETFEATURE' and self.format:
-            if not self.allgml:
+            if not self.all_gml:
                 # all the gml has not been intercepted in sendResponse
                 handler.clearBody()
                 with open(join(self.temp_dir, '{}.gml'.format(self.filename)), 'a') as f:
@@ -281,7 +281,7 @@ class WFSFilter(QgsServerFilter):
                         remove(join(self.temp_dir, file))
 
             self.format = None
-            self.allgml = False
+            self.all_gml = False
             self.filename = None
             self.base_name_target = None
             return

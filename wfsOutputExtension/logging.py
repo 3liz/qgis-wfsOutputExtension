@@ -16,6 +16,10 @@ class Logger:
         QgsMessageLog.logMessage(PLUGIN + ' : ' + message, PLUGIN, Qgis.Info)
 
     @staticmethod
+    def warning(message):
+        QgsMessageLog.logMessage(PLUGIN + ' : ' + message, PLUGIN, Qgis.Warning)
+
+    @staticmethod
     def critical(message):
         QgsMessageLog.logMessage(PLUGIN + ' : ' + message, PLUGIN, Qgis.Critical)
 

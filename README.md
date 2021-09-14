@@ -38,12 +38,12 @@ To install the plugin :
 * Retrieve the archive version for a given QGIS version (QGIS 2 or QGIS 3)
 * Extract the content of the archive with `unzip`
 * Check rights
-* Move the directory of the plugin into the plugins directory of QGIS Server (it is `/opt/qgis/plugins` most
+* Move the directory of the plugin into the plugin's directory of QGIS Server (it is `/opt/qgis/plugins` most
 often)
 * Restart QGIS Server
 
 For more details :
-* Read [the documention of QGIS Server](https://docs.qgis.org/testing/en/docs/server_manual/plugins.html#installation).
+* Read [the documentation of QGIS Server](https://docs.qgis.org/testing/en/docs/server_manual/plugins.html#installation).
 * Read [AtlasPrint install process](https://github.com/3liz/qgis-atlasprint/blob/master/atlasprint/README.md#installation-with-qgis-server)
 because it's similar.
 
