@@ -22,23 +22,15 @@ flake8:
 test:3.10:
   stage: tests
   script:
+    - sed -i "s/^version=.*$/version=${CI_COMMIT_REF_NAME}/g" wfsOutputExtension/metadata.txt
     - make -C tests FLAVOR=3.10
   tags:
     - factory
 
-check_tag:
-  stage: tests
-  only:
-    - tags
-  tags:
-    - fabric
-  script:
-    - export TAG_NAME=${CI_COMMIT_REF_NAME:1}
-    - .lizcloud/check_tag.sh ${TAG_NAME}
-
 build:
   stage: build
   script:
+    - sed -i "s/^version=.*$/version=${CI_COMMIT_REF_NAME}/g" wfsOutputExtension/metadata.txt
     - make -C .lizcloud -f factory.mk package
   environment:
     name: snap
@@ -51,6 +43,7 @@ build:
 deploy_snap:
   stage: deploy
   script:
+    - sed -i "s/^version=.*$/version=${CI_COMMIT_REF_NAME}/g" wfsOutputExtension/metadata.txt
     - $FACTORY_SCRIPTS/deploy-package $FACTORY_PACKAGE_NAME
   environment:
     name: snap
@@ -60,6 +53,7 @@ deploy_snap:
 release_prod:
   stage: release
   script:
+    - sed -i "s/^version=.*$/version=${CI_COMMIT_REF_NAME}/g" wfsOutputExtension/metadata.txt
     - $FACTORY_SCRIPTS/release-package $FACTORY_PACKAGE_NAME
   environment:
     name: production
@@ -72,6 +66,7 @@ release_prod:
 build_2:
   stage: build
   script:
+    - sed -i "s/^version=.*$/version=${CI_COMMIT_REF_NAME}/g" wfsOutputExtension/metadata.txt
     - make -C .lizcloud -f fabric.mk package
   environment:
     name: snap
@@ -81,6 +76,7 @@ build_2:
 deploy_snap_2:
   stage: deploy
   script:
+    - sed -i "s/^version=.*$/version=${CI_COMMIT_REF_NAME}/g" wfsOutputExtension/metadata.txt
     - sudo -u fabric fab snap deploy:qgis3_wfsoutput,force=true
   environment:
     name: snap
@@ -90,6 +86,7 @@ deploy_snap_2:
 release_prod_2:
   stage: release
   script:
+    - sed -i "s/^version=.*$/version=${CI_COMMIT_REF_NAME}/g" wfsOutputExtension/metadata.txt
     - sudo -u fabric fab prod release:qgis3_wfsoutput
   environment:
     name: production
@@ -103,41 +100,9 @@ tickets:
   stage: release
   only:
     - tags
-  tags:
-    - factory
+  image:
+    name: registry.snap.lizlan:5000/infra/ci-tools:latest
   script:
-    # Lizmap-box
-    - >
-      curl
-      --header 'Content-Type:application/json'
-      --header "PRIVATE-TOKEN:${USER_TOKEN}"
-      --data '{
-      "id":70,
-      "assignee_ids":[77],
-      "labels":"qgis server",
-      "title":"Nouvelle version '"${FACTORY_PRODUCT_NAME}"' : '"${CI_COMMIT_REF_NAME}"'",
-      "description":"Il existe une nouvelle version '"${FACTORY_PRODUCT_NAME}"' : '"${CI_COMMIT_REF_NAME}"' 👍\n Lien vers la pipeline https://projects.3liz.org/'"${GITLAB_SLUG}"'/pipelines/'"${CI_PIPELINE_ID}"' \n"}'
-      --request POST https://projects.3liz.org/api/v4/projects/70/issues
-    # Infra-doc
-    - >
-      curl
-      --header 'Content-Type:application/json'
-      --header "PRIVATE-TOKEN:${USER_TOKEN}"
-      --data '{
-      "id":7,
-      "assignee_ids":[77],
-      "labels":"SAAS Qgis,release,infra-v2",
-      "title":"Nouvelle version '"${FACTORY_PRODUCT_NAME}"' : '"${CI_COMMIT_REF_NAME}"'",
-      "description":"Il existe une nouvelle version '"${FACTORY_PRODUCT_NAME}"' : '"${CI_COMMIT_REF_NAME}"' 👍\n Lien vers la pipeline https://projects.3liz.org/'"${GITLAB_SLUG}"'/pipelines/'"${CI_PIPELINE_ID}"' \n"}'
-      --request POST https://projects.3liz.org/api/v4/projects/7/issues
-    - >
-      curl
-      --header 'Content-Type:application/json'
-      --header "PRIVATE-TOKEN:${USER_TOKEN}"
-      --data '{
-      "id":7,
-      "assignee_ids":[5],
-      "labels":"SAAS Qgis,release,infra-v3",
-      "title":"Nouvelle version '"${FACTORY_PRODUCT_NAME}"' : '"${CI_COMMIT_REF_NAME}"'",
-      "description":"Il existe une nouvelle version '"${FACTORY_PRODUCT_NAME}"' : '"${CI_COMMIT_REF_NAME}"' 👍\n Lien vers la pipeline https://projects.3liz.org/'"${GITLAB_SLUG}"'/pipelines/'"${CI_PIPELINE_ID}"' \n"}'
-      --request POST https://projects.3liz.org/api/v4/projects/7/issues
+    - create_ticket.py
+  tags:
+    - factory-plain

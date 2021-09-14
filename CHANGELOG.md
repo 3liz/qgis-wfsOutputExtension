@@ -1,4 +1,4 @@
-# CHANGELOG
+# Changelog
 
 ## v1.5.3 - 2021-05-05
 
