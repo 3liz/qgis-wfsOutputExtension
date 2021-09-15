@@ -3,9 +3,12 @@ __license__ = 'GPL version 3'
 __email__ = 'info@3liz.org'
 
 import functools
+import inspect
+import time
 import traceback
 
 from contextlib import contextmanager
+from pathlib import Path
 
 from qgis.core import Qgis, QgsMessageLog
 
@@ -63,8 +66,12 @@ def log_function(func):
     """ Decorator to log function. """
     @functools.wraps(func)
     def log_function_core(*args, **kwargs):
-        QgsMessageLog.logMessage('{}.{}'.format(PLUGIN, func.__name__), PLUGIN, Qgis.Info)
+        start = time.time()
         value = func(*args, **kwargs)
+        end = time.time()
+        Logger.info(
+            "{}.{}.{} ran in {}s".format(
+                PLUGIN, Path(inspect.stack()[1].filename).stem, func.__name__, round(end - start, 2)))
         return value
 
     return log_function_core

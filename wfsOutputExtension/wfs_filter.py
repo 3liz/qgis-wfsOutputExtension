@@ -2,6 +2,7 @@ __copyright__ = 'Copyright 2021, 3Liz'
 __license__ = 'GPL version 3'
 __email__ = 'info@3liz.org'
 
+import os
 import tempfile
 import time
 
@@ -40,9 +41,12 @@ class WFSFilter(QgsServerFilter):
         self.temp_dir = join(tempfile.gettempdir(), 'QGIS_WfsOutputExtension')
         # self.temp_dir = '/src/'  # Use ONLY in debug for docker
 
+        self.debug_mode = os.environ.get(
+            'DEBUG_WFSOUTPUTEXTENSION', 'true').upper() in ('TRUE', '1')
+
         # Fix race-condition if multiple servers are run concurrently
         makedirs(self.temp_dir, exist_ok=True)
-        self.logger.info('temporary directory is {}'.format(self.temp_dir))
+        self.logger.info('Temporary directory is {}'.format(self.temp_dir))
 
     @log_function
     def requestReady(self):
@@ -135,6 +139,8 @@ class WFSFilter(QgsServerFilter):
         gml_path = join(self.temp_dir, '{}.gml'.format(self.filename))
         output_layer = QgsVectorLayer(gml_path, 'qgis_server_wfs_features', 'ogr')
 
+        self.logger.info("Temporary GML file is {}".format(gml_path))
+
         if not output_layer.isValid():
             handler.appendBody(b'')
             self.logger.critical('Output layer {} is not valid.'.format(gml_path))
@@ -146,6 +152,7 @@ class WFSFilter(QgsServerFilter):
         temporary.open()
         output_file = temporary.fileName()
         temporary.remove()  # Fix issue #18
+        self.logger.info("Temporary {} file is {}".format(format_definition.filename_ext, output_file))
         self.base_name_target = basename(splitext(output_file)[0])
 
         try:
@@ -209,6 +216,7 @@ class WFSFilter(QgsServerFilter):
             # create the zip file
             base_filename = splitext(output_file)[0]
             zip_file_path = join(self.temp_dir, '{}.zip'.format(base_filename))
+            self.logger.info("Zipping the output in {}".format(zip_file_path))
             with zipfile.ZipFile(zip_file_path, 'w') as zf:
 
                 # Add the main file
@@ -236,6 +244,7 @@ class WFSFilter(QgsServerFilter):
                 return True
 
         else:
+            self.logger.info("Sending the output file")
             # return the file created without zip
             f = QFile(output_file)
             if f.open(QFile.ReadOnly):
@@ -273,9 +282,20 @@ class WFSFilter(QgsServerFilter):
                 # Find all files associated with the request and remove them
                 for file in listdir(self.temp_dir):
                     if file.startswith(self.filename):  # GML, GFS
-                        remove(join(self.temp_dir, file))
+                        file_path = join(self.temp_dir, file)
+                        if self.debug_mode:
+                            self.logger.info(
+                                "DEBUG_WFSOUTPUTEXTENSION is on, not removing {}".format(file_path))
+                        else:
+                            remove(file_path)
+
                     if file.startswith(self.base_name_target):  # Target extension, ZIP
-                        remove(join(self.temp_dir, file))
+                        file_path = join(self.temp_dir, file)
+                        if self.debug_mode:
+                            self.logger.info(
+                                "DEBUG_WFSOUTPUTEXTENSION is on, not removing {}".format(file_path))
+                        else:
+                            remove(file_path)
 
             self.format = None
             self.all_gml = False
@@ -287,10 +307,13 @@ class WFSFilter(QgsServerFilter):
             data = handler.body().data()
             dom = minidom.parseString(data)
 
+            formats_added = False
+
             if dom.documentElement.attributes['version'].value == '1.0.0':
 
                 for _ in dom.getElementsByTagName('GetFeature'):
                     for result_format_node in dom.getElementsByTagName('ResultFormat'):
+                        formats_added = True
                         for output in OutputFormats:
                             format_node = dom.createElement(output.filename_ext.upper())
                             result_format_node.appendChild(format_node)
@@ -311,11 +334,17 @@ class WFSFilter(QgsServerFilter):
                             if param_node.attributes['name'].value != 'outputFormat':
                                 continue
 
+                            formats_added = True
                             for output in OutputFormats:
                                 value_node = dom.createElement('ows:Value')
                                 text_node = dom.createTextNode(output.filename_ext.upper())
                                 value_node.appendChild(text_node)
                                 param_node.appendChild(value_node)
+
+            if formats_added:
+                self.logger.info("All formats have been added in the GetCapabilities")
+            else:
+                self.logger.info("No formats have been added in the GetCapabilities")
 
             handler.clearBody()
             handler.appendBody(dom.toxml('utf-8'))

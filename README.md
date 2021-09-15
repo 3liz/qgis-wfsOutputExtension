@@ -47,7 +47,11 @@ For more details :
 * Read [AtlasPrint install process](https://github.com/3liz/qgis-atlasprint/blob/master/atlasprint/README.md#installation-with-qgis-server)
 because it's similar.
 
-# Tests
+## Debug on production
+
+It's possible to set `DEBUG_WFSOUTPUTEXTENSION` to `TRUE` or `1`, the plugin will not remove temporary files on the disk.
+
+## Tests
 
 ```bash
 docker pull 3liz/qgis-platform:3.10
