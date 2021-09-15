@@ -115,7 +115,7 @@ jobs:
     - name: Package the plugin and deploy it in the release
       run: >-
         qgis-plugin-ci
-        release ${GITHUB_REF/refs\/tags\//}
+        release ${{ env.RELEASE_VERSION }}
         --github-token ${{ secrets.BOT_HUB_TOKEN }}
         --osgeo-username ${{ secrets.OSGEO_USERNAME }}
         --osgeo-password ${{ secrets.OSGEO_PASSWORD }}
