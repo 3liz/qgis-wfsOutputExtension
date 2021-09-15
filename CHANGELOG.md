@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+## 1.6.0 - 2021-09-15
+
+* Add some logs in the plugin to make it easier to debug
+* Add a new environment variable `DEBUG_WFSOUTPUTEXTENSION` to not remove temporary files if needed
+* Set chmod 755 on the plugin directory
+* Some refactoring in the code
+
 ## v1.5.3 - 2021-05-05
 
 * Upgrade the plugin as not experimental in its metadata.txt
