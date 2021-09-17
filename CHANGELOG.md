@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 1.6.2 - 2021-09-17
+
+* Fix error on deployment on our CI
+
 ## 1.6.1 - 2021-09-17
 
 * Fix error in some deployments environment, regression from 1.6.0
