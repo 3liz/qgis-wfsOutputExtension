@@ -2,12 +2,17 @@
 
 ## Unreleased
 
+## 1.6.1 - 2021-09-17
+
+* Fix error in some deployments environment, regression from 1.6.0
+
 ## 1.6.0 - 2021-09-15
 
 * Add some logs in the plugin to make it easier to debug
 * Add a new environment variable `DEBUG_WFSOUTPUTEXTENSION` to not remove temporary files if needed
 * Set chmod 755 on the plugin directory
 * Some refactoring in the code
+* Removing the `v` prefix in the version name
 
 ## v1.5.3 - 2021-05-05
 
