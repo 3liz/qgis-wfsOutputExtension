@@ -12,7 +12,7 @@ tracker=https://github.com/3liz/qgis-wfsOutputExtension/issues
 repository=https://github.com/3liz/qgis-wfsOutputExtension
 homepage=https://github.com/3liz/qgis-wfsOutputExtension
 
-version=master
+version=1.5.3
 changelog=changelog
 category=Server
 icon=icon.png
