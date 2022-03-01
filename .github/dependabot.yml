@@ -6,7 +6,9 @@ updates:
     schedule:
       interval: "monthly"
 
-#  - package-ecosystem: "github-actions"
-#    directory: "/"
-#    schedule:
-#      interval: "monthly"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    assignees:
+      - "Gustry"
