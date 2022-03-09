@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* Fix removing files when a Python exception occurs during the request
+
 ## 1.6.2 - 2021-09-17
 
 * Fix error on deployment on our CI

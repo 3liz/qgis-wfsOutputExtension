@@ -273,29 +273,33 @@ class WFSFilter(QgsServerFilter):
 
         if request == 'GETFEATURE' and self.format:
             if not self.all_gml:
-                # all the gml has not been intercepted in sendResponse
-                handler.clearBody()
-                with open(join(self.temp_dir, '{}.gml'.format(self.filename)), 'a') as f:
-                    f.write('</wfs:FeatureCollection>')
-                self.send_output_file(handler)
+                try:
+                    # all the gml has not been intercepted in sendResponse
+                    handler.clearBody()
+                    with open(join(self.temp_dir, '{}.gml'.format(self.filename)), 'a') as f:
+                        f.write('</wfs:FeatureCollection>')
+                    self.send_output_file(handler)
+                except Exception as e:
+                    self.logger.critical("Critical exception when processing the request :")
+                    self.logger.log_exception(e)
+                finally:
+                    # Find all files associated with the request and remove them
+                    for file in listdir(self.temp_dir):
+                        if file.startswith(self.filename):  # GML, GFS
+                            file_path = join(self.temp_dir, file)
+                            if self.debug_mode:
+                                self.logger.info(
+                                    "DEBUG_WFSOUTPUTEXTENSION is on, not removing {}".format(file_path))
+                            else:
+                                remove(file_path)
 
-                # Find all files associated with the request and remove them
-                for file in listdir(self.temp_dir):
-                    if file.startswith(self.filename):  # GML, GFS
-                        file_path = join(self.temp_dir, file)
-                        if self.debug_mode:
-                            self.logger.info(
-                                "DEBUG_WFSOUTPUTEXTENSION is on, not removing {}".format(file_path))
-                        else:
-                            remove(file_path)
-
-                    if file.startswith(self.base_name_target):  # Target extension, ZIP
-                        file_path = join(self.temp_dir, file)
-                        if self.debug_mode:
-                            self.logger.info(
-                                "DEBUG_WFSOUTPUTEXTENSION is on, not removing {}".format(file_path))
-                        else:
-                            remove(file_path)
+                        if file.startswith(self.base_name_target):  # Target extension, ZIP
+                            file_path = join(self.temp_dir, file)
+                            if self.debug_mode:
+                                self.logger.info(
+                                    "DEBUG_WFSOUTPUTEXTENSION is on, not removing {}".format(file_path))
+                            else:
+                                remove(file_path)
 
             self.format = None
             self.all_gml = False
