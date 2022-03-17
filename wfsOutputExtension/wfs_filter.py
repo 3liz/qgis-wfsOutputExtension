@@ -25,6 +25,11 @@ from wfsOutputExtension.definitions import OutputFormats
 from wfsOutputExtension.logging import Logger, log_function
 
 
+class ProcessingRequestException(Exception):
+    """When an exception occurs during the process."""
+    pass
+
+
 class WFSFilter(QgsServerFilter):
 
     @log_function
@@ -133,6 +138,10 @@ class WFSFilter(QgsServerFilter):
 
     @log_function
     def send_output_file(self, handler):
+        """ Process the request.
+
+        :raises ProcessingRequestException when there is an errro
+        """
         format_definition = OutputFormats.find(self.format)
 
         # read the GML
@@ -143,8 +152,7 @@ class WFSFilter(QgsServerFilter):
 
         if not output_layer.isValid():
             handler.appendBody(b'')
-            self.logger.critical('Output layer {} is not valid.'.format(gml_path))
-            return False
+            raise ProcessingRequestException('Output layer {} is not valid.'.format(gml_path))
 
         # Temporary file where to write the output
         temporary = QTemporaryFile(
@@ -189,6 +197,7 @@ class WFSFilter(QgsServerFilter):
                     QgsProject.instance().transformContext(),
                     options)
             else:
+                # QGIS_VERSION_INT < 31003
                 write_result, error_message = QgsVectorFileWriter.writeAsVectorFormat(
                     output_layer,
                     output_file,
@@ -199,10 +208,9 @@ class WFSFilter(QgsServerFilter):
                 self.logger.critical(error_message)
                 return False
 
-        except Exception as e:
+        except Exception:
             handler.appendBody(b'')
-            Logger.log_exception(e)
-            return False
+            raise
 
         if format_definition.zip:
             # compress files
