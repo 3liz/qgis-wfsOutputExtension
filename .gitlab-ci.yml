@@ -19,10 +19,17 @@ flake8:
   tags:
     - factory
 
-test:3.10:
+test:
   stage: tests
+  parallel:
+    matrix:
+      - QGIS_VERSION: [
+        "3.16",
+        "3.22",
+        "nightly-release",
+      ]
   script:
-    - make -C tests FLAVOR=3.10
+    - make -C tests FLAVOR=${QGIS_VERSION}
   tags:
     - factory
 
