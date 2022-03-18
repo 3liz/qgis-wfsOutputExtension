@@ -26,32 +26,31 @@ It adds:
 * ODS, the datatable
 * XLSX, the datatable
 
-## Versions
-
-* For QGIS Server 3, higher than version 1.1.0
-* For QGIS Server 2, version 1.0.2 or lower
-
 ## Installation
 
-To install the plugin :
-* Go to the [download section](https://github.com/3liz/qgis-wfsOutputExtension/releases)
-* Retrieve the archive version for a given QGIS version (QGIS 2 or QGIS 3)
-* Extract the content of the archive with `unzip`
-* Check rights
-* Move the directory of the plugin into the plugin's directory of QGIS Server (it is `/opt/qgis/plugins` most
-often)
-* Restart QGIS Server
+We recommend to use [QGIS-Plugin-Manager](https://pypi.org/project/qgis-plugin-manager/) :
+
+```commandline
+# After you have installed and setup qgis-plugin-manager
+cd /opt/qgis/plugins
+qgis-plugin-manager install wfsOutputExtension
+# Check rights
+# Restart QGIS Server
+```
 
 For more details :
+
 * Read [the documentation of QGIS Server](https://docs.qgis.org/testing/en/docs/server_manual/plugins.html#installation).
 * Read [AtlasPrint install process](https://github.com/3liz/qgis-atlasprint/blob/master/atlasprint/README.md#installation-with-qgis-server)
-because it's similar.
+  because it's similar.
 
 ## Debug on production
 
 It's possible to set `DEBUG_WFSOUTPUTEXTENSION` to `TRUE` or `1`, the plugin will not remove temporary files on the disk.
 
 ## Tests
+
+Using the docker stack to test the plugin :
 
 ```bash
 docker pull 3liz/qgis-platform:3.16
