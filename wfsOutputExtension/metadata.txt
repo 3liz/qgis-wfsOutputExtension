@@ -13,6 +13,9 @@ repository=https://github.com/3liz/qgis-wfsOutputExtension
 homepage=https://github.com/3liz/qgis-wfsOutputExtension
 
 version=1.6.2
+commitNumber=
+commitSha1=
+dateTime=
 changelog=changelog
 category=Server
 icon=icon.png
