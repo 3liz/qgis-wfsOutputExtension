@@ -19,7 +19,7 @@ from qgis.core import (
     QgsVectorLayer,
 )
 from qgis.PyQt.QtCore import QFile, QTemporaryFile
-from qgis.server import QgsServerFilter
+from qgis.server import QgsServerFilter, QgsBufferServerRequest, QgsServerRequest, QgsBufferServerResponse
 
 from wfsOutputExtension.definitions import OutputFormats
 from wfsOutputExtension.logging import Logger, log_function
@@ -31,10 +31,10 @@ class ProcessingRequestException(Exception):
 
 
 class WFSFilter(QgsServerFilter):
-
     @log_function
     def __init__(self, server_iface):
         super(WFSFilter, self).__init__(server_iface)
+        self.server_iface = server_iface
         self.logger = Logger()
 
         self.format = None
@@ -143,9 +143,17 @@ class WFSFilter(QgsServerFilter):
         :raises ProcessingRequestException when there is an errro
         """
         format_definition = OutputFormats.find(self.format)
+        self.logger.info("WFS request to get format {}".format(format_definition.ogr_provider))
+
+        # Fetch the XSD
+        type_name = handler.parameterMap().get('TYPENAME', '')
+        headers = handler.requestHeaders()
+        result = self.xsd_for_layer(type_name, headers)
 
         # read the GML
         gml_path = join(self.temp_dir, '{}.gml'.format(self.filename))
+        if result:
+            gml_path += '|option:FORCE_SRS_DETECTION=YES'
         output_layer = QgsVectorLayer(gml_path, 'qgis_server_wfs_features', 'ogr')
 
         self.logger.info("Temporary GML file is {}".format(gml_path))
@@ -263,6 +271,46 @@ class WFSFilter(QgsServerFilter):
         handler.appendBody(b'')
         self.logger.critical('Error no output file')
         return False
+
+    @log_function
+    def xsd_for_layer(self, type_name: str, headers: dict) -> bool:
+        """ Get the XSD describing the layer. """
+        project = QgsProject.instance()
+        parameters = {
+            "MAP": project.fileName(),
+            "SERVICE": "WFS",
+            "VERSION": "1.0.0",
+            "REQUEST": "DescribeFeatureType",
+            "TYPENAME": type_name,
+            "OUTPUT": "XMLSCHEMA",
+        }
+
+        query_string = "?" + "&".join(f"{key}={value}" for key, value in parameters.items())
+        request = QgsBufferServerRequest(
+            query_string,
+            QgsServerRequest.GetMethod,
+            headers,
+            None
+        )
+        service = self.server_iface.serviceRegistry().getService('WFS', '1.0.0')
+        response = QgsBufferServerResponse()
+        service.executeRequest(request, response, project)
+        # Flush otherwise the body is empty
+        response.flush()
+        self.logger.info(f"Fetching XSD : HTTP code {response.statusCode()}, request {query_string}")
+        content = bytes(response.body()).decode('utf8')
+        if content == "":
+            self.logger.critical("Content for the XSD request is empty.")
+            return False
+
+        if response.statusCode() != 200:
+            self.logger.critical(f"HTTP error when requesting the XSD : return {response.statusCode()}")
+            return False
+
+        with open(join(self.temp_dir, f'{self.filename}.xsd'), 'w') as f:
+            f.write(content)
+
+        return True
 
     @log_function
     def responseComplete(self):

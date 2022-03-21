@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+* Fix the field type detection when exporting the layer
 * Fix removing files when a Python exception occurs during the request
 * Removing files by default when the export is done
 
