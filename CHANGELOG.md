@@ -3,6 +3,7 @@
 ## Unreleased
 
 * Fix removing files when a Python exception occurs during the request
+* Removing files by default when the export is done
 
 ## 1.6.2 - 2021-09-17
 

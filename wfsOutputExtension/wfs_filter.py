@@ -47,7 +47,7 @@ class WFSFilter(QgsServerFilter):
         # self.temp_dir = '/src/'  # Use ONLY in debug for docker
 
         self.debug_mode = os.environ.get(
-            'DEBUG_WFSOUTPUTEXTENSION', 'true').upper() in ('TRUE', '1')
+            'DEBUG_WFSOUTPUTEXTENSION', 'false').upper() in ('TRUE', '1')
 
         # Fix race-condition if multiple servers are run concurrently
         makedirs(self.temp_dir, exist_ok=True)
