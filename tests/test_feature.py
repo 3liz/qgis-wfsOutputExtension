@@ -41,10 +41,20 @@ def test_getfeature_gml(client):
     assert rv.status_code == 200
     assert 'text/xml' in rv.headers.get('Content-Type'), rv.headers
     layer = _test_vector_layer(rv.file('gml'), 'GML')
-    _test_list(layer.fields().names(), ['gml_id', 'id', 'name', 'comment'])
-    assert layer.uniqueValues(0) == {'lines.1', 'lines.2', 'lines.3', 'lines.4'}
-    assert layer.uniqueValues(1) == {1, 2, 3, 4}
-    assert layer.uniqueValues(2) == {'éù%@ > 1', '(]~€ > 2', '<![CDATA[Line < 3]]>', '05200'}
+    _test_list(layer.fields().names(), ['gml_id', 'id', 'trailing_zero', 'name', 'comment'])
+
+    index = layer.fields().indexFromName('gml_id')
+    assert layer.uniqueValues(index) == {'lines.1', 'lines.2', 'lines.3', 'lines.4'}
+
+    index = layer.fields().indexFromName('id')
+    assert layer.uniqueValues(index) == {1, 2, 3, 4}
+
+    index = layer.fields().indexFromName('name')
+    assert layer.uniqueValues(index) == {'éù%@ > 1', '(]~€ > 2', '<![CDATA[Line < 3]]>', 'Line name'}
+
+    index = layer.fields().indexFromName('trailing_zero')
+    # field detected as integer, so losing the trailing zero
+    assert layer.uniqueValues(index) == {5200}
 
 
 def test_getfeature_kml(client):
@@ -68,13 +78,9 @@ def test_getfeature_kml(client):
         layer.fields().names(),
         [
             'Name', 'description', 'timestamp', 'begin', 'end', 'altitudeMode', 'tessellate', 'extrude',
-            'visibility', 'drawOrder', 'icon', 'gml_id', 'id', 'comment',
+            'visibility', 'drawOrder', 'icon', 'gml_id', 'id', 'trailing_zero', 'comment',
         ]
     )
-
-    # Trailing 0
-    index = layer.fields().indexFromName('Name')  # Name is capitalized for GML
-    assert '05200' in layer.uniqueValues(index)
 
 
 def test_getfeature_gpkg(client):
@@ -92,11 +98,7 @@ def test_getfeature_gpkg(client):
     assert rv.status_code == 200
     assert 'application/geopackage+vnd.sqlite3' in rv.headers.get('Content-type'), rv.headers
     layer = _test_vector_layer(rv.file('gpkg'), 'GPKG')
-    _test_list(layer.fields().names(), ['fid', 'gml_id', 'id', 'name', 'comment'])
-
-    # Trailing 0
-    index = layer.fields().indexFromName('name')
-    assert '05200' in layer.uniqueValues(index)
+    _test_list(layer.fields().names(), ['fid', 'gml_id', 'id', 'trailing_zero', 'name', 'comment'])
 
 
 def test_getfeature_gpx(client):
@@ -118,20 +120,16 @@ def test_getfeature_gpx(client):
     layer = _test_vector_layer(rv.file('gpx') + '|layername=routes', 'GPX')
     _test_list(layer.fields().names(), [
         'name', 'cmt', 'desc', 'src', 'link1_href', 'link1_text', 'link1_type', 'link2_href', 'link2_text',
-        'ogr_comment', 'link2_type', 'number', 'type', 'ogr_gml_id', 'ogr_id'])
+        'ogr_trailing_zero', 'ogr_comment', 'link2_type', 'number', 'type', 'ogr_gml_id', 'ogr_id'])
 
     # GPX is a specific format with some pre-defined field names
     # Checking "name"
     assert layer.fields().indexFromName('name') == 0
-    assert layer.uniqueValues(0) == {'éù%@ > 1', '(]~€ > 2', '<![CDATA[Line < 3]]>', '05200'}
+    assert layer.uniqueValues(0) == {'éù%@ > 1', '(]~€ > 2', '<![CDATA[Line < 3]]>', 'Line name'}
 
     # Checking "desc"
     assert layer.fields().indexFromName('desc') == 2
     assert layer.uniqueValues(2) == {NULL}
-
-    # Trailing 0
-    index = layer.fields().indexFromName('name')
-    assert '05200' in layer.uniqueValues(index)
 
 
 def test_getfeature_ods(client):
@@ -149,11 +147,7 @@ def test_getfeature_ods(client):
     assert rv.status_code == 200
     assert 'application/vnd.oasis.opendocument.spreadsheet' in rv.headers.get('Content-type'), rv.headers
     layer = _test_vector_layer(rv.file('ods'), 'ODS')
-    _test_list(layer.fields().names(), ['gml_id', 'id', 'name', 'comment'])
-
-    # Trailing 0
-    index = layer.fields().indexFromName('name')
-    assert '05200' in layer.uniqueValues(index)
+    _test_list(layer.fields().names(), ['gml_id', 'id', 'trailing_zero', 'name', 'comment'])
 
 
 def test_getfeature_geojson(client):
@@ -171,11 +165,7 @@ def test_getfeature_geojson(client):
     assert rv.status_code == 200
     assert 'application/vnd.geo+json' in rv.headers.get('Content-Type'), rv.headers
     layer = _test_vector_layer(rv.file('geojson'), 'GeoJSON')
-    _test_list(layer.fields().names(), ['id', 'name', 'comment'])
-
-    # Trailing 0
-    index = layer.fields().indexFromName('name')
-    assert '05200' in layer.uniqueValues(index)
+    _test_list(layer.fields().names(), ['id', 'trailing_zero', 'name', 'comment'])
 
 
 def test_getfeature_excel(client):
@@ -194,11 +184,7 @@ def test_getfeature_excel(client):
     expected = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     assert expected in rv.headers.get('Content-type'), rv.headers
     layer = _test_vector_layer(rv.file('xlsx'), 'XLSX')
-    _test_list(layer.fields().names(), ['gml_id', 'id', 'name', 'comment'])
-
-    # Trailing 0
-    index = layer.fields().indexFromName('name')
-    assert '05200' in layer.uniqueValues(index)
+    _test_list(layer.fields().names(), ['gml_id', 'id', 'trailing_zero', 'name', 'comment'])
 
 
 def test_getfeature_csv(client):
@@ -216,11 +202,7 @@ def test_getfeature_csv(client):
     assert rv.status_code == 200
     assert 'text/csv' in rv.headers.get('Content-type'), rv.headers
     layer = _test_vector_layer(rv.file('csv'), 'CSV')
-    _test_list(layer.fields().names(), ['gml_id', 'id', 'name', 'comment'])
-
-    # Trailing 0
-    index = layer.fields().indexFromName('name')
-    assert '05200' in layer.uniqueValues(index)
+    _test_list(layer.fields().names(), ['gml_id', 'id', 'trailing_zero', 'name', 'comment'])
 
 
 def test_getfeature_shapefile(client):
@@ -238,11 +220,8 @@ def test_getfeature_shapefile(client):
     assert rv.status_code == 200
     assert "application/x-zipped-shp" in rv.headers.get('Content-type'), rv.headers
     layer = _test_vector_layer('/vsizip/' + rv.file('zip'), 'ESRI Shapefile')
-    _test_list(layer.fields().names(), ['gml_id', 'id', 'name', 'comment'])
-
-    # Trailing 0
-    index = layer.fields().indexFromName('name')
-    assert '05200' in layer.uniqueValues(index)
+    # shapefile is splitting trailing_zero to trailing_z
+    _test_list(layer.fields().names(), ['gml_id', 'id', 'trailing_z', 'name', 'comment'])
 
 
 def test_getfeature_tab(client):
@@ -260,11 +239,7 @@ def test_getfeature_tab(client):
     assert rv.status_code == 200
     assert 'application/x-zipped-tab' in rv.headers.get('Content-type'), rv.headers
     layer = _test_vector_layer('/vsizip/' + rv.file('zip') + '/lines.tab', 'MapInfo File')
-    _test_list(layer.fields().names(), ['gml_id', 'id', 'name', 'comment'])
-
-    # Trailing 0
-    index = layer.fields().indexFromName('name')
-    assert '05200' in layer.uniqueValues(index)
+    _test_list(layer.fields().names(), ['gml_id', 'id', 'trailing_zero', 'name', 'comment'])
 
 
 def test_getfeature_mif(client):
@@ -282,11 +257,7 @@ def test_getfeature_mif(client):
     assert rv.status_code == 200
     assert 'application/x-zipped-mif' in rv.headers.get('Content-type'), rv.headers
     layer = _test_vector_layer('/vsizip/' + rv.file('zip') + '/lines.mif', 'MapInfo File')
-    _test_list(layer.fields().names(), ['gml_id', 'id', 'name', 'comment'])
-
-    # Trailing 0
-    index = layer.fields().indexFromName('name')
-    assert '05200' in layer.uniqueValues(index)
+    _test_list(layer.fields().names(), ['gml_id', 'id', 'trailing_zero', 'name', 'comment'])
 
 
 def test_getfeature_layer_name_with_accent(client):
@@ -322,4 +293,4 @@ def test_getfeature_geojson_with_selection(client):
     assert rv.status_code == 200
     assert 'application/vnd.geo+json' in rv.headers.get('Content-Type'), rv.headers
     layer = _test_vector_layer(rv.file('geojson'), 'GeoJSON', count=2)
-    _test_list(layer.fields().names(), ['id', 'name', 'comment'])
+    _test_list(layer.fields().names(), ['id', 'trailing_zero', 'name', 'comment'])

@@ -2,9 +2,9 @@
 "type": "FeatureCollection",
 "name": "test_lines",
 "features": [
-{ "type": "Feature", "properties": { "id": 1, "name": "éù%@ > 1", "comment": "Accents" }, "geometry": { "type": "LineString", "coordinates": [ [ 3.80, 43.50 ], [ 3.80, 43.60 ] ] } },
-{ "type": "Feature", "properties": { "id": 2, "name": "(]~€ > 2", "comment": "Normal" }, "geometry": { "type": "LineString", "coordinates": [ [ 3.80, 43.60 ], [ 3.90, 43.60 ] ] } },
-{ "type": "Feature", "properties": { "id": 3, "name": "Line < 3", "comment": "Normal"} , "geometry": { "type": "LineString", "coordinates": [ [ 3.90, 43.60 ], [ 3.90, 43.50 ] ] } },
-{ "type": "Feature", "properties": { "id": 4, "name": "05200", "comment": "Trailing 0"}, "geometry": { "type": "LineString", "coordinates": [ [ 3.90, 43.50 ], [ 3.80, 43.50 ] ] } }
+{ "type": "Feature", "properties": { "id": 1, "trailing_zero": "05200", "name": "éù%@ > 1", "comment": "Accents" }, "geometry": { "type": "LineString", "coordinates": [ [ 3.80, 43.50 ], [ 3.80, 43.60 ] ] } },
+{ "type": "Feature", "properties": { "id": 2, "trailing_zero": "05200", "name": "(]~€ > 2", "comment": "Normal" }, "geometry": { "type": "LineString", "coordinates": [ [ 3.80, 43.60 ], [ 3.90, 43.60 ] ] } },
+{ "type": "Feature", "properties": { "id": 3, "trailing_zero": "05200", "name": "Line < 3", "comment": "Normal"} , "geometry": { "type": "LineString", "coordinates": [ [ 3.90, 43.60 ], [ 3.90, 43.50 ] ] } },
+{ "type": "Feature", "properties": { "id": 4, "trailing_zero": "05200", "name": "Line name", "comment": "Normal"}, "geometry": { "type": "LineString", "coordinates": [ [ 3.90, 43.50 ], [ 3.80, 43.50 ] ] } }
 ]
 }
