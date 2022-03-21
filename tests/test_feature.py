@@ -1,7 +1,7 @@
 import logging
 
 from qgis.core import QgsVectorLayer
-from qgis.PyQt.QtCore import NULL
+from qgis.PyQt.QtCore import NULL, QVariant
 
 LOGGER = logging.getLogger('server')
 
@@ -82,6 +82,16 @@ def test_getfeature_kml(client):
         ]
     )
 
+    # ID
+    index = layer.fields().indexFromName('id')
+    assert layer.uniqueValues(index) == {1, 2, 3, 4}
+    assert layer.fields().at(index).type() == QVariant.Int
+
+    # Trailing 0
+    index = layer.fields().indexFromName('trailing_zero')
+    assert '05200' in layer.uniqueValues(index)
+    assert layer.fields().at(index).type() == QVariant.String
+
 
 def test_getfeature_gpkg(client):
     """ Test GetFeature as GPKG. """
@@ -99,6 +109,16 @@ def test_getfeature_gpkg(client):
     assert 'application/geopackage+vnd.sqlite3' in rv.headers.get('Content-type'), rv.headers
     layer = _test_vector_layer(rv.file('gpkg'), 'GPKG')
     _test_list(layer.fields().names(), ['fid', 'gml_id', 'id', 'trailing_zero', 'name', 'comment'])
+
+    # ID
+    index = layer.fields().indexFromName('id')
+    assert layer.uniqueValues(index) == {1, 2, 3, 4}
+    assert layer.fields().at(index).type() == QVariant.Int
+
+    # Trailing 0
+    index = layer.fields().indexFromName('trailing_zero')
+    assert '05200' in layer.uniqueValues(index)
+    assert layer.fields().at(index).type() == QVariant.String
 
 
 def test_getfeature_gpx(client):
@@ -123,6 +143,11 @@ def test_getfeature_gpx(client):
         'ogr_trailing_zero', 'ogr_comment', 'link2_type', 'number', 'type', 'ogr_gml_id', 'ogr_id'])
 
     # GPX is a specific format with some pre-defined field names
+    # ID
+    index = layer.fields().indexFromName('ogr_id')
+    assert layer.uniqueValues(index) == {1, 2, 3, 4}
+    assert layer.fields().at(index).type() == QVariant.Int
+
     # Checking "name"
     assert layer.fields().indexFromName('name') == 0
     assert layer.uniqueValues(0) == {'éù%@ > 1', '(]~€ > 2', '<![CDATA[Line < 3]]>', 'Line name'}
@@ -130,6 +155,11 @@ def test_getfeature_gpx(client):
     # Checking "desc"
     assert layer.fields().indexFromName('desc') == 2
     assert layer.uniqueValues(2) == {NULL}
+
+    # Trailing 0 not working in GPX
+    index = layer.fields().indexFromName('ogr_trailing_zero')
+    assert 5200 in layer.uniqueValues(index)
+    assert layer.fields().at(index).type() == QVariant.Int
 
 
 def test_getfeature_ods(client):
@@ -149,6 +179,16 @@ def test_getfeature_ods(client):
     layer = _test_vector_layer(rv.file('ods'), 'ODS')
     _test_list(layer.fields().names(), ['gml_id', 'id', 'trailing_zero', 'name', 'comment'])
 
+    # ID
+    index = layer.fields().indexFromName('id')
+    assert layer.uniqueValues(index) == {1, 2, 3, 4}
+    assert layer.fields().at(index).type() == QVariant.Int
+
+    # Trailing 0
+    index = layer.fields().indexFromName('trailing_zero')
+    assert '05200' in layer.uniqueValues(index)
+    assert layer.fields().at(index).type() == QVariant.String
+
 
 def test_getfeature_geojson(client):
     """ Test GetFeature as GeoJSON. """
@@ -166,6 +206,16 @@ def test_getfeature_geojson(client):
     assert 'application/vnd.geo+json' in rv.headers.get('Content-Type'), rv.headers
     layer = _test_vector_layer(rv.file('geojson'), 'GeoJSON')
     _test_list(layer.fields().names(), ['id', 'trailing_zero', 'name', 'comment'])
+
+    # ID
+    index = layer.fields().indexFromName('id')
+    assert layer.uniqueValues(index) == {1, 2, 3, 4}
+    assert layer.fields().at(index).type() == QVariant.Int
+
+    # Trailing 0
+    index = layer.fields().indexFromName('trailing_zero')
+    assert '05200' in layer.uniqueValues(index)
+    assert layer.fields().at(index).type() == QVariant.String
 
 
 def test_getfeature_excel(client):
@@ -186,6 +236,16 @@ def test_getfeature_excel(client):
     layer = _test_vector_layer(rv.file('xlsx'), 'XLSX')
     _test_list(layer.fields().names(), ['gml_id', 'id', 'trailing_zero', 'name', 'comment'])
 
+    # ID
+    index = layer.fields().indexFromName('id')
+    assert layer.uniqueValues(index) == {1, 2, 3, 4}
+    assert layer.fields().at(index).type() == QVariant.Int
+
+    # Trailing 0
+    index = layer.fields().indexFromName('trailing_zero')
+    assert '05200' in layer.uniqueValues(index)
+    assert layer.fields().at(index).type() == QVariant.String
+
 
 def test_getfeature_csv(client):
     """ Test GetFeature as CSV. """
@@ -203,6 +263,17 @@ def test_getfeature_csv(client):
     assert 'text/csv' in rv.headers.get('Content-type'), rv.headers
     layer = _test_vector_layer(rv.file('csv'), 'CSV')
     _test_list(layer.fields().names(), ['gml_id', 'id', 'trailing_zero', 'name', 'comment'])
+
+    # ID
+    # All fields are loaded as string
+    index = layer.fields().indexFromName('id')
+    assert layer.uniqueValues(index) == {'1', '2', '3', '4'}
+    assert layer.fields().at(index).type() == QVariant.String
+
+    # Trailing 0
+    index = layer.fields().indexFromName('trailing_zero')
+    assert '05200' in layer.uniqueValues(index)
+    assert layer.fields().at(index).type() == QVariant.String
 
 
 def test_getfeature_shapefile(client):
@@ -223,6 +294,16 @@ def test_getfeature_shapefile(client):
     # shapefile is splitting trailing_zero to trailing_z
     _test_list(layer.fields().names(), ['gml_id', 'id', 'trailing_z', 'name', 'comment'])
 
+    # ID
+    index = layer.fields().indexFromName('id')
+    assert layer.uniqueValues(index) == {1, 2, 3, 4}
+    assert layer.fields().at(index).type() == QVariant.LongLong  # Int to LongLong compare to others
+
+    # Trailing 0
+    index = layer.fields().indexFromName('trailing_z')
+    assert '05200' in layer.uniqueValues(index)
+    assert layer.fields().at(index).type() == QVariant.String
+
 
 def test_getfeature_tab(client):
     """ Test GetFeature as TAB. """
@@ -241,6 +322,16 @@ def test_getfeature_tab(client):
     layer = _test_vector_layer('/vsizip/' + rv.file('zip') + '/lines.tab', 'MapInfo File')
     _test_list(layer.fields().names(), ['gml_id', 'id', 'trailing_zero', 'name', 'comment'])
 
+    # ID
+    index = layer.fields().indexFromName('id')
+    assert layer.uniqueValues(index) == {1, 2, 3, 4}
+    assert layer.fields().at(index).type() == QVariant.Int
+
+    # Trailing 0
+    index = layer.fields().indexFromName('trailing_zero')
+    assert '05200' in layer.uniqueValues(index)
+    assert layer.fields().at(index).type() == QVariant.String
+
 
 def test_getfeature_mif(client):
     """ Test GetFeature as MIF. """
@@ -258,6 +349,16 @@ def test_getfeature_mif(client):
     assert 'application/x-zipped-mif' in rv.headers.get('Content-type'), rv.headers
     layer = _test_vector_layer('/vsizip/' + rv.file('zip') + '/lines.mif', 'MapInfo File')
     _test_list(layer.fields().names(), ['gml_id', 'id', 'trailing_zero', 'name', 'comment'])
+
+    # ID
+    index = layer.fields().indexFromName('id')
+    assert layer.uniqueValues(index) == {1, 2, 3, 4}
+    assert layer.fields().at(index).type() == QVariant.Int
+
+    # Trailing 0
+    index = layer.fields().indexFromName('trailing_zero')
+    assert '05200' in layer.uniqueValues(index)
+    assert layer.fields().at(index).type() == QVariant.String
 
 
 def test_getfeature_layer_name_with_accent(client):
@@ -294,3 +395,13 @@ def test_getfeature_geojson_with_selection(client):
     assert 'application/vnd.geo+json' in rv.headers.get('Content-Type'), rv.headers
     layer = _test_vector_layer(rv.file('geojson'), 'GeoJSON', count=2)
     _test_list(layer.fields().names(), ['id', 'trailing_zero', 'name', 'comment'])
+
+    # ID
+    index = layer.fields().indexFromName('id')
+    assert layer.uniqueValues(index) == {1, 2}
+    assert layer.fields().at(index).type() == QVariant.Int
+
+    # Trailing 0
+    index = layer.fields().indexFromName('trailing_zero')
+    assert '05200' in layer.uniqueValues(index)
+    assert layer.fields().at(index).type() == QVariant.String

@@ -11,25 +11,28 @@ PROJECT = 'lines.qgs'
 
 def test_describefeaturetype(client):
     """ Test DescribeFeatureType. """
-    query_string = (
-        "?"
-        "SERVICE=WFS&"
-        "VERSION=1.1.0&"
-        "REQUEST=DescribeFeatureType&"
-        "OUTPUTFORMAT=GEOJSON&"  # Does not have an effet, it's still XML below ?
-        "TYPENAME=éàIncê&"
-        "MAP={}"
-    ).format(PROJECT)
-    rv = client.get(query_string, PROJECT)
-    assert rv.status_code == 200
-    assert rv.headers.get('Content-Type', '').find('text/xml') == 0
+    # XMLSCHEMA is used for the sub request to get the XSD
+    outputs = ('GEOJSON', 'XMLSCHEMA')
+    for output in outputs:
+        query_string = (
+            "?"
+            "SERVICE=WFS&"
+            "VERSION=1.0.0&"
+            "REQUEST=DescribeFeatureType&"
+            f"OUTPUTFORMAT={output}&"
+            "TYPENAME=éàIncê&"
+            f"MAP={PROJECT}"
+        )
+        rv = client.get(query_string, PROJECT)
+        assert rv.status_code == 200
+        assert rv.headers.get('Content-Type', '').find('text/xml') == 0
 
-    data = rv.content.decode('utf-8')
+        data = rv.content.decode('utf-8')
 
-    expected = [
-        'name="geometry"',
-        'name="id"',
-        'name="name"',
-    ]
-    for item in expected:
-        assert item in data
+        expected = [
+            'name="geometry"',
+            'name="id"',
+            'name="name"',
+        ]
+        for item in expected:
+            assert item in data
