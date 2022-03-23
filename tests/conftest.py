@@ -5,21 +5,14 @@ import os
 import sys
 import tempfile
 import warnings
+import lxml.etree
+import pytest
 
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     import gdal
 
-import lxml.etree
-import pytest
-
 from qgis.PyQt import Qt
-
-logging.basicConfig(stream=sys.stderr)
-logging.disable(logging.NOTSET)
-
-LOGGER = logging.getLogger('server')
-LOGGER.setLevel(logging.DEBUG)
 
 from typing import Any, Dict, Generator
 
@@ -30,6 +23,9 @@ from qgis.server import (
     QgsServer,
     QgsServerRequest,
 )
+
+LOGGER = logging.getLogger('server')
+LOGGER.setLevel(logging.DEBUG)
 
 qgis_application = None
 
@@ -68,7 +64,7 @@ def pytest_sessionstart(session):
     qgis_application.initQgis()
 
     # Install logger hook
-    install_logger_hook(verbose=True)
+    install_logger_hook()
 
 
 def pytest_sessionfinish(session, exitstatus):
@@ -88,7 +84,6 @@ NAMESPACES = {
     'gml': "http://www.opengis.net/gml",
     'xsi': "http://www.w3.org/2001/XMLSchema-instance"
 }
-
 
 class OWSResponse:
 
@@ -159,25 +154,32 @@ def client(request):
         def getprojectpath(self, name: str) -> str:
             return self.datapath.join(name)
 
-        def get(self, query: str, project: str=None) -> OWSResponse:
+        def request(self, method, query:str, project: str=None, data: bytes=None,
+                    headers: dict={}) -> OWSResponse:
             """ Return server response from query
             """
-            request = QgsBufferServerRequest(query, QgsServerRequest.GetMethod, {}, None)
+            request  = QgsBufferServerRequest(query, method, headers, data)
             response = QgsBufferServerResponse()
             if project is not None and not os.path.isabs(project):
                 projectpath = self.datapath.join(project)
-                qgsproject = QgsProject()
+                qgsproject  = QgsProject()
                 if not qgsproject.read(projectpath.strpath):
-                    raise ValueError("Error reading project '%s':" % projectpath.strpath)
+                    raise ValueError(f"Error reading project '{projectpath.strpath}'")
             else:
                 qgsproject = None
             self.server.handleRequest(request, response, project=qgsproject)
             return OWSResponse(response)
 
+        def get(self, *args, **kwargs) -> OWSResponse:
+            return self.request(QgsServerRequest.GetMethod, *args, **kwargs)
+
+        def delete(self, *args, **kwargs) -> OWSResponse:
+            return self.request(QgsServerRequest.DeleteMethod, *args, **kwargs)
+
     return _Client()
 
 
-## 
+##
 ## Plugins
 ##
 
@@ -277,14 +279,12 @@ def install_logger_hook( verbose: bool=False ) -> None:
 
     # Add a hook to qgis  message log
     def writelogmessage(message, tag, level):
-        arg = '{}: {}'.format(tag, message)
+        arg = '{}: {}'.format(tag,message)
         if level == Qgis.Warning:
             LOGGER.warning(arg)
         elif level == Qgis.Critical:
             LOGGER.error(arg)
-        elif verbose:
-            # Qgis is somehow very noisy
-            # log only if verbose is set
+        else:
             LOGGER.info(arg)
 
     messageLog = QgsApplication.messageLog()

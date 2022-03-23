@@ -8,6 +8,8 @@ wfsOutputExtension.zip
 .venv/
 venv/
 
+.env
+
 # Packages
 *.egg
 *.egg-info
@@ -55,3 +57,7 @@ tests/__output__
 tests/qgis_server.log
 .idea/
 wfsoutputextension.*.zip
+
+/tests/data/local
+
+__output__
