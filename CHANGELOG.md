@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.7.0 - 2022-03-24
+
 * Fix the field type detection when exporting the layer
 * Fix removing files when a Python exception occurs during the request
 * Removing files by default when the export is done
