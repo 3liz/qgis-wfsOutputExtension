@@ -1,6 +1,6 @@
 import logging
 
-from qgis.core import QgsVectorLayer
+from qgis.core import QgsVectorLayer, Qgis
 from qgis.PyQt.QtCore import NULL, QVariant
 
 LOGGER = logging.getLogger('server')
@@ -50,7 +50,11 @@ def test_getfeature_gml(client):
     assert layer.uniqueValues(index) == {1, 2, 3, 4}
 
     index = layer.fields().indexFromName('name')
-    assert layer.uniqueValues(index) == {'éù%@ > 1', '(]~€ > 2', '<![CDATA[Line < 3]]>', 'Line name'}
+    if Qgis.QGIS_VERSION_INT >= 32206:
+        # QGIS 3.24.1 and 3.22.6
+        assert layer.uniqueValues(index) == {'éù%@ > 1', '(]~€ > 2', 'Line < 3', 'Line name'}
+    else:
+        assert layer.uniqueValues(index) == {'éù%@ > 1', '(]~€ > 2', '<![CDATA[Line < 3]]>', 'Line name'}
 
     index = layer.fields().indexFromName('trailing_zero')
     # field detected as integer, so losing the trailing zero
@@ -150,7 +154,11 @@ def test_getfeature_gpx(client):
 
     # Checking "name"
     assert layer.fields().indexFromName('name') == 0
-    assert layer.uniqueValues(0) == {'éù%@ > 1', '(]~€ > 2', '<![CDATA[Line < 3]]>', 'Line name'}
+    if Qgis.QGIS_VERSION_INT >= 32206:
+        # QGIS 3.24.1 and 3.22.6
+        assert layer.uniqueValues(0) == {'éù%@ > 1', '(]~€ > 2', 'Line < 3', 'Line name'}
+    else:
+        assert layer.uniqueValues(0) == {'éù%@ > 1', '(]~€ > 2', '<![CDATA[Line < 3]]>', 'Line name'}
 
     # Checking "desc"
     assert layer.fields().indexFromName('desc') == 2
