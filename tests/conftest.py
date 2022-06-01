@@ -8,7 +8,10 @@ import warnings
 
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=DeprecationWarning)
-    import gdal
+    try:
+        import gdal
+    except ImportError:
+        from osgeo import gdal
 
 import lxml.etree
 import pytest
