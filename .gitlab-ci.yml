@@ -1,9 +1,10 @@
 stages:
 - tests
-- tag
 - build
 - deploy
 - release
+- edit-repository
+- push-repository
 
 variables:
     FACTORY_PRODUCT_NAME: wfsOutputExtension
@@ -33,6 +34,7 @@ test:
   tags:
     - factory
 
+# Deprecated
 check_tag:
   stage: tests
   only:
@@ -41,6 +43,18 @@ check_tag:
     - fabric
   script:
     - .lizcloud/check_tag.sh ${CI_COMMIT_REF_NAME}
+
+version:
+  stage: tests
+  image:
+    name: registry.snap.lizlan:5000/infra/ci-tools:latest
+  script:
+    - version-helper
+  tags:
+    - factory-plain
+  artifacts:
+    reports:
+      dotenv: build.env
 
 build:
   stage: build
@@ -53,6 +67,47 @@ build:
       - ".lizcloud/factory.manifest"
   tags:
     - infrav3
+
+package-zip:
+  dependencies:
+    - version
+  stage: build
+  image: registry.snap.lizlan:5000/qgis-plugin-ci:latest
+  script:
+    - >
+      qgis-plugin-ci
+      package ${VERSION}
+      --plugin-repo-url https://packages.3liz.org/pub/${FACTORY_PRODUCT_NAME}-qgis-plugin/${STATUS}/
+  tags:
+    - infrav3-plain
+  artifacts:
+    untracked: true
+    expose_as: 'QGIS package'
+    paths:
+      - ${FACTORY_PRODUCT_NAME}.${VERSION}.zip
+      - plugins.xml
+
+push-zip-fetch-repo:
+  dependencies:
+    - version
+    - package-zip
+  stage: deploy
+  script:
+    # Upload into the plugin directory
+    - upload_to_packages_server ${FACTORY_PRODUCT_NAME}.${VERSION}.zip pub/${FACTORY_PRODUCT_NAME}-qgis-plugin/${STATUS}/
+    - upload_to_packages_server plugins.xml pub/${FACTORY_PRODUCT_NAME}-qgis-plugin/${STATUS}/
+
+    # Fetch XML files
+    - mkdir tmp_repository
+    - pull_folder_from_packages_server pub/server-plugins-repository/${STATUS}/ tmp_repository
+
+    # This CI job is running as "fabric" user, the next job is "factory"
+    - chmod 777 -R tmp_repository/
+  tags:
+    - fabric
+  artifacts:
+    paths:
+      - tmp_repository/*.xml
 
 deploy_snap:
   stage: deploy
@@ -115,3 +170,30 @@ tickets:
     - create_ticket.py
   tags:
     - factory-plain
+
+edit-repository:
+  stage: edit-repository
+  dependencies:
+    - package-zip
+    - push-zip-fetch-repo
+  before_script:
+    - PATH=$PATH:~/.local/bin
+    - pip3 install --user qgis-plugin-repo
+  script:
+    - qgis-plugin-repo merge plugins.xml tmp_repository/*.xml
+  tags:
+    - factory
+  artifacts:
+    untracked: true
+    paths:
+      - tmp_repository/*.xml
+
+push-repository:
+  stage: push-repository
+  dependencies:
+    - version
+    - edit-repository
+  script:
+    - upload_folder_to_packages_server tmp_repository/ pub/server-plugins-repository/${STATUS}/
+  tags:
+    - fabric
