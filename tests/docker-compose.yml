@@ -1,0 +1,23 @@
+version: '3.8'
+services:
+    qgis-server:
+        image: 3liz/qgis-map-server:${QGIS_VERSION}
+        environment:
+            QGSRV_CACHE_ROOTDIR: /srv/projects
+            QGSRV_LOGGING_LEVEL: DEBUG
+            QGSRV_USER: ${QGIS_USER_ID}:${QGIS_USER_GID}
+            QGSRV_SERVER_WORKERS: '1'
+            QGSRV_SERVER_PLUGINPATH: /srv/plugins
+            QGSRV_MANAGEMENT_ENABLED: 'yes'
+            QGSRV_MANAGEMENT_INTERFACES: '0.0.0.0'
+            QGSRV_API_ENABLED_LANDING_PAGE: 'yes'
+            QGSRV_SERVER_TIMEOUT: '300'
+            QGIS_SERVER_TRUST_LAYER_METADATA: 'yes'
+            QGSRV_CACHE_STRICT_CHECK: 'no'
+        volumes:
+            - ${WORKDIR}:/srv/plugins
+            - ${WORKDIR}/tests/data:/srv/projects
+        ports:
+            - ${SERVER_HTTP_PORT}:8080
+            - ${SERVER_MANAGEMENT_PORT}:19876     
+
