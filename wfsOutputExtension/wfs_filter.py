@@ -8,6 +8,7 @@ import time
 
 from os import listdir, makedirs, remove
 from os.path import basename, exists, join, splitext
+from pathlib import Path
 from xml.dom import minidom
 
 from qgis.core import (
@@ -219,6 +220,12 @@ class WFSFilter(QgsServerFilter):
         except Exception:
             handler.appendBody(b'')
             raise
+
+        if format_definition == OutputFormats.Shp:
+            # For SHP, we add the CPG, #55
+            cpg_file = Path(self.temp_dir).joinpath(self.base_name_target + '.cpg')
+            with open(cpg_file, 'w', encoding='utf8') as f:
+                f.write("{}\n".format(options.fileEncoding))
 
         if format_definition.zip:
             # compress files
