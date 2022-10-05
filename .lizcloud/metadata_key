@@ -9,7 +9,7 @@ from configparser import ConfigParser
 
 def read_metadata_key(filename, key):
     if not os.path.exists(filename):
-        print("File", filename, "does not exists")
+        print(f"File {filename} does not exists")
         sys.exit(1)
 
     parser = ConfigParser()

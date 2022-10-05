@@ -35,8 +35,8 @@ def test_getfeature_gml(client):
         "VERSION=1.1.0&"
         "REQUEST=GetFeature&"
         "TYPENAME=lines&"
-        "MAP={}"
-    ).format(PROJECT)
+        f"MAP={PROJECT}"
+    )
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
     assert 'text/xml' in rv.headers.get('Content-Type'), rv.headers
@@ -70,8 +70,8 @@ def test_getfeature_kml(client):
         "REQUEST=GetFeature&"
         "TYPENAME=lines&"
         "OUTPUTFORMAT=KML&"
-        "MAP={}"
-    ).format(PROJECT)
+        f"MAP={PROJECT}"
+    )
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
     assert 'application/vnd.google-earth.kml+xml' in rv.headers.get('Content-type'), rv.headers
@@ -106,8 +106,8 @@ def test_getfeature_gpkg(client):
         "REQUEST=GetFeature&"
         "TYPENAME=lines&"
         "OUTPUTFORMAT=GPKG&"
-        "MAP={}"
-    ).format(PROJECT)
+        f"MAP={PROJECT}"
+    )
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
     assert 'application/geopackage+vnd.sqlite3' in rv.headers.get('Content-type'), rv.headers
@@ -134,8 +134,8 @@ def test_getfeature_gpx(client):
         "REQUEST=GetFeature&"
         "TYPENAME=lines&"
         "OUTPUTFORMAT=GPX&"
-        "MAP={}"
-    ).format(PROJECT)
+        f"MAP={PROJECT}"
+    )
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
     assert 'application/gpx+xml' in rv.headers.get('Content-type'), rv.headers
@@ -179,8 +179,8 @@ def test_getfeature_ods(client):
         "REQUEST=GetFeature&"
         "TYPENAME=lines&"
         "OUTPUTFORMAT=ODS&"
-        "MAP={}"
-    ).format(PROJECT)
+        f"MAP={PROJECT}"
+    )
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
     assert 'application/vnd.oasis.opendocument.spreadsheet' in rv.headers.get('Content-type'), rv.headers
@@ -207,8 +207,8 @@ def test_getfeature_geojson(client):
         "REQUEST=GetFeature&"
         "TYPENAME=lines&"
         "OUTPUTFORMAT=GeoJSON&"
-        "MAP={}"
-    ).format(PROJECT)
+        f"MAP={PROJECT}"
+    )
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
     assert 'application/vnd.geo+json' in rv.headers.get('Content-Type'), rv.headers
@@ -235,8 +235,8 @@ def test_getfeature_excel(client):
         "REQUEST=GetFeature&"
         "TYPENAME=lines&"
         "OUTPUTFORMAT=XLSX&"
-        "MAP={}"
-    ).format(PROJECT)
+        f"MAP={PROJECT}"
+    )
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
     expected = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -264,8 +264,8 @@ def test_getfeature_csv(client):
         "REQUEST=GetFeature&"
         "TYPENAME=lines&"
         "OUTPUTFORMAT=CSV&"
-        "MAP={}"
-    ).format(PROJECT)
+        f"MAP={PROJECT}"
+    )
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
     assert 'text/csv' in rv.headers.get('Content-type'), rv.headers
@@ -293,8 +293,8 @@ def test_getfeature_shapefile(client):
         "REQUEST=GetFeature&"
         "TYPENAME=lines&"
         "OUTPUTFORMAT=SHP&"
-        "MAP={}"
-    ).format(PROJECT)
+        f"MAP={PROJECT}"
+    )
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
     assert "application/x-zipped-shp" in rv.headers.get('Content-type'), rv.headers
@@ -322,8 +322,8 @@ def test_getfeature_tab(client):
         "REQUEST=GetFeature&"
         "TYPENAME=lines&"
         "OUTPUTFORMAT=TAB&"
-        "MAP={}"
-    ).format(PROJECT)
+        f"MAP={PROJECT}"
+    )
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
     assert 'application/x-zipped-tab' in rv.headers.get('Content-type'), rv.headers
@@ -350,8 +350,8 @@ def test_getfeature_mif(client):
         "REQUEST=GetFeature&"
         "TYPENAME=lines&"
         "OUTPUTFORMAT=MIF&"
-        "MAP={}"
-    ).format(PROJECT)
+        f"MAP={PROJECT}"
+    )
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
     assert 'application/x-zipped-mif' in rv.headers.get('Content-type'), rv.headers
@@ -378,8 +378,8 @@ def test_getfeature_layer_name_with_accent(client):
         "REQUEST=GetFeature&"
         "TYPENAME=éàIncê&"
         "OUTPUTFORMAT=CSV&"
-        "MAP={}"
-    ).format(PROJECT)
+        f"MAP={PROJECT}"
+    )
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
     assert 'text/csv' in rv.headers.get('Content-type'), rv.headers
@@ -396,8 +396,8 @@ def test_getfeature_geojson_with_selection(client):
         "TYPENAME=lines&"
         "OUTPUTFORMAT=GeoJSON&"
         "FEATUREID=lines.1,lines.2&"
-        "MAP={}"
-    ).format(PROJECT)
+        f"MAP={PROJECT}"
+    )
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
     assert 'application/vnd.geo+json' in rv.headers.get('Content-Type'), rv.headers

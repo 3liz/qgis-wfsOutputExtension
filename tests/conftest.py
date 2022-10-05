@@ -45,11 +45,11 @@ plugin_path = None
 
 
 def pytest_report_header(config):
-    message = 'QGIS : {}\n'.format(Qgis.QGIS_VERSION_INT)
-    message += 'Python GDAL : {}\n'.format(gdal.VersionInfo('VERSION_NUM'))
-    message += 'Python : {}\n'.format(sys.version)
+    message = f'QGIS : {Qgis.QGIS_VERSION_INT}\n'
+    message += f'Python GDAL : {gdal.VersionInfo("VERSION_NUM")}\n'
+    message += f'Python : {sys.version}\n'
     # message += 'Python path : {}'.format(sys.path)
-    message += 'QT : {}'.format(Qt.QT_VERSION_STR)
+    message += f'QT : {Qt.QT_VERSION_STR}'
     return message
 
 
@@ -171,7 +171,7 @@ def client(request):
                 projectpath = self.datapath.join(project)
                 qgsproject = QgsProject()
                 if not qgsproject.read(projectpath.strpath):
-                    raise ValueError("Error reading project '%s':" % projectpath.strpath)
+                    raise ValueError(f"Error reading project '{projectpath.strpath}':")
             else:
                 qgsproject = None
             self.server.handleRequest(request, response, project=qgsproject)
@@ -180,7 +180,7 @@ def client(request):
     return _Client()
 
 
-## 
+##
 ## Plugins
 ##
 
@@ -221,26 +221,26 @@ def find_plugins(pluginpath: str) -> Generator[str,None,None]:
             with open(metadatafile, mode='rt') as f:
                 cp.read_file(f)
             if not cp['general'].getboolean('server'):
-                logging.critical("%s is not a server plugin", plugin)
+                logging.critical(f"{plugin} is not a server plugin")
                 continue
 
             minver = cp['general'].get('qgisMinimumVersion')
             maxver = cp['general'].get('qgisMaximumVersion')
         except Exception as exc:
-            LOGGER.critical("Error reading plugin metadata '%s': %s", metadatafile, exc)
+            LOGGER.critical(f"Error reading plugin metadata '{metadatafile}': {exc}", metadatafile, exc)
             continue
 
         if not checkQgisVersion(minver, maxver):
             LOGGER.critical(
-                ("Unsupported version for %s:"
-                 "\n MinimumVersion: %s"
-                 "\n MaximumVersion: %s"
-                 "\n Qgis version: %s"
-                 "\n Discarding") % (
-                    plugin, minver, maxver, Qgis.QGIS_VERSION.split('-')[0]))
+                f"Unsupported version for {plugin}:"
+                f"\n MinimumVersion: {minver}"
+                f"\n MaximumVersion: {maxver}"
+                f"\n Qgis version: {Qgis.QGIS_VERSION.split('-')[0]}"
+                "\n Discarding"
+            )
             continue
 
-        yield os.path.basename(plugin)        
+        yield os.path.basename(plugin)
 
 
 server_plugins = {}
@@ -252,7 +252,7 @@ def load_plugins(serverIface: 'QgsServerInterface') -> None:
     if not plugin_path:
         return
 
-    LOGGER.info("Initializing plugins from %s", plugin_path)
+    LOGGER.info(f"Initializing plugins from {plugin_path}")
     sys.path.append(plugin_path)
 
     for plugin in find_plugins(plugin_path):
@@ -263,9 +263,9 @@ def load_plugins(serverIface: 'QgsServerInterface') -> None:
 
             # Initialize the plugin
             server_plugins[plugin] = package.serverClassFactory(serverIface)
-            LOGGER.info("Loaded plugin %s", plugin)
+            LOGGER.info(f"Loaded plugin {plugin}")
         except:
-            LOGGER.error("Error loading plugin %s", plugin)
+            LOGGER.error(f"Error loading plugin {plugin}")
             raise
 
 
@@ -280,7 +280,7 @@ def install_logger_hook( verbose: bool=False ) -> None:
 
     # Add a hook to qgis  message log
     def writelogmessage(message, tag, level):
-        arg = '{}: {}'.format(tag, message)
+        arg = f'{tag}: {message}'
         if level == Qgis.Warning:
             LOGGER.warning(arg)
         elif level == Qgis.Critical:

@@ -30,12 +30,7 @@ class Logger:
     @staticmethod
     def log_exception(e: BaseException):
         """ Log a Python exception. """
-        Logger.critical(
-            "Critical exception:\n{e}\n{traceback}".format(
-                e=e,
-                traceback=traceback.format_exc()
-            )
-        )
+        Logger.critical(f"Critical exception:\n{e}\n{traceback.format_exc()}")
 
 
 def exception_handler(func):
@@ -64,7 +59,7 @@ def log_function(func):
         start = time.time()
         value = func(*args, **kwargs)
         end = time.time()
-        Logger.info("{} ran in {}s".format(func.__name__, round(end - start, 2)))
+        Logger.info(f"{func.__name__} ran in {round(end - start, 2)}s")
         return value
 
     return log_function_core

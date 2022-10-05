@@ -52,7 +52,7 @@ class WFSFilter(QgsServerFilter):
 
         # Fix race-condition if multiple servers are run concurrently
         makedirs(self.temp_dir, exist_ok=True)
-        self.logger.info('Temporary directory is {}'.format(self.temp_dir))
+        self.logger.info(f'Temporary directory is {self.temp_dir}')
 
     @log_function
     def requestReady(self):
@@ -82,18 +82,17 @@ class WFSFilter(QgsServerFilter):
         handler.setParameter('OUTPUTFORMAT', 'GML2')
         self.format = output_format
         self.typename = params.get('TYPENAME', '')
-        self.filename = 'gml_features_{}'.format(time.time())
+        self.filename = f'gml_features_{time.time()}'
 
         # set headers
         handler.clear()
         handler.setResponseHeader('Content-Type', format_definition.content_type)
         if format_definition.zip:
             handler.setResponseHeader(
-                'Content-Disposition', 'attachment; filename="{}.zip"'.format(self.typename))
+                'Content-Disposition', f'attachment; filename="{self.typename}.zip"')
         else:
             handler.setResponseHeader(
-                'Content-Disposition',
-                'attachment; filename="{}.{}"'.format(self.typename, format_definition.filename_ext))
+                'Content-Disposition', f'attachment; filename="{self.typename}.{format_definition.filename_ext}"')
 
     def sendResponse(self):
         # if format is null, nothing to do
@@ -104,7 +103,7 @@ class WFSFilter(QgsServerFilter):
 
         # write body in GML temp file
         data = handler.body().data().decode('utf8')
-        output_file = join(self.temp_dir, '{}.gml'.format(self.filename))
+        output_file = join(self.temp_dir, f'{self.filename}.gml')
         with open(output_file, 'ab') as f:
             if data.find('xsi:schemaLocation') == -1:
                 # noinspection PyTypeChecker
@@ -124,11 +123,10 @@ class WFSFilter(QgsServerFilter):
             handler.setResponseHeader('Content-type', format_definition.content_type)
             if format_definition.zip:
                 handler.setResponseHeader(
-                    'Content-Disposition', 'attachment; filename="{}.zip"'.format(self.typename))
+                    'Content-Disposition', f'attachment; filename="{self.typename}.zip"')
             else:
                 handler.setResponseHeader(
-                    'Content-Disposition',
-                    'attachment; filename="{}.{}"'.format(self.typename, format_definition.filename_ext))
+                    'Content-Disposition', f'attachment; filename="{self.typename}.{format_definition.filename_ext}"')
         else:
             handler.clearBody()
 
@@ -144,7 +142,7 @@ class WFSFilter(QgsServerFilter):
         :raises ProcessingRequestException when there is an errro
         """
         format_definition = OutputFormats.find(self.format)
-        self.logger.info("WFS request to get format {}".format(format_definition.ogr_provider))
+        self.logger.info(f"WFS request to get format {format_definition.ogr_provider}")
 
         # Fetch the XSD
         type_name = handler.parameterMap().get('TYPENAME', '')
@@ -152,24 +150,24 @@ class WFSFilter(QgsServerFilter):
         result = self.xsd_for_layer(type_name, headers)
 
         # read the GML
-        gml_path = join(self.temp_dir, '{}.gml'.format(self.filename))
+        gml_path = join(self.temp_dir, f'{self.filename}.gml')
         if result:
             gml_path += '|option:FORCE_SRS_DETECTION=YES'
         output_layer = QgsVectorLayer(gml_path, 'qgis_server_wfs_features', 'ogr')
 
-        self.logger.info("Temporary GML file is {}".format(gml_path))
+        self.logger.info(f"Temporary GML file is {gml_path}")
 
         if not output_layer.isValid():
             handler.appendBody(b'')
-            raise ProcessingRequestException('Output layer {} is not valid.'.format(gml_path))
+            raise ProcessingRequestException(f'Output layer {gml_path} is not valid.')
 
         # Temporary file where to write the output
         temporary = QTemporaryFile(
-            join(self.temp_dir, 'to-{}-XXXXXX.{}'.format(self.format, format_definition.filename_ext)))
+            join(self.temp_dir, f'to-{self.format}-XXXXXX.{format_definition.filename_ext}'))
         temporary.open()
         output_file = temporary.fileName()
         temporary.remove()  # Fix issue #18
-        self.logger.info("Temporary {} file is {}".format(format_definition.filename_ext, output_file))
+        self.logger.info(f"Temporary {format_definition.filename_ext} file is {output_file}")
         self.base_name_target = basename(splitext(output_file)[0])
 
         try:
@@ -225,7 +223,7 @@ class WFSFilter(QgsServerFilter):
             # For SHP, we add the CPG, #55
             cpg_file = Path(self.temp_dir).joinpath(self.base_name_target + '.cpg')
             with open(cpg_file, 'w', encoding='utf8') as f:
-                f.write("{}\n".format(options.fileEncoding))
+                f.write(f"{options.fileEncoding}\n")
 
         if format_definition.zip:
             # compress files
@@ -238,21 +236,21 @@ class WFSFilter(QgsServerFilter):
 
             # create the zip file
             base_filename = splitext(output_file)[0]
-            zip_file_path = join(self.temp_dir, '{}.zip'.format(base_filename))
-            self.logger.info("Zipping the output in {}".format(zip_file_path))
+            zip_file_path = join(self.temp_dir, f'{base_filename}.zip')
+            self.logger.info(f"Zipping the output in {zip_file_path}")
             with zipfile.ZipFile(zip_file_path, 'w') as zf:
 
                 # Add the main file
-                arc_filename = '{}.{}'.format(self.typename, format_definition.filename_ext)
+                arc_filename = f'{self.typename}.{format_definition.filename_ext}'
                 zf.write(
                     output_file,
                     compress_type=compression,
                     arcname=arc_filename)
 
                 for extension in format_definition.ext_to_zip:
-                    file_path = join(self.temp_dir, '{}.{}'.format(base_filename, extension))
+                    file_path = join(self.temp_dir, f'{base_filename}.{extension}')
                     if exists(file_path):
-                        arc_filename = '{}.{}'.format(self.typename, extension)
+                        arc_filename = f'{self.typename}.{extension}'
                         zf.write(
                             file_path,
                             compress_type=compression,
@@ -339,7 +337,7 @@ class WFSFilter(QgsServerFilter):
                 try:
                     # all the gml has not been intercepted in sendResponse
                     handler.clearBody()
-                    with open(join(self.temp_dir, '{}.gml'.format(self.filename)), 'a') as f:
+                    with open(join(self.temp_dir, f'{self.filename}.gml'), 'a') as f:
                         f.write('</wfs:FeatureCollection>')
                     self.send_output_file(handler)
                 except Exception as e:
@@ -352,7 +350,7 @@ class WFSFilter(QgsServerFilter):
                             file_path = join(self.temp_dir, file)
                             if self.debug_mode:
                                 self.logger.info(
-                                    "DEBUG_WFSOUTPUTEXTENSION is on, not removing {}".format(file_path))
+                                    f"DEBUG_WFSOUTPUTEXTENSION is on, not removing {file_path}")
                             else:
                                 remove(file_path)
 
@@ -360,7 +358,7 @@ class WFSFilter(QgsServerFilter):
                             file_path = join(self.temp_dir, file)
                             if self.debug_mode:
                                 self.logger.info(
-                                    "DEBUG_WFSOUTPUTEXTENSION is on, not removing {}".format(file_path))
+                                    f"DEBUG_WFSOUTPUTEXTENSION is on, not removing {file_path}")
                             else:
                                 remove(file_path)
 

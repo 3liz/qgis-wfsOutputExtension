@@ -16,8 +16,8 @@ def test_getcapabilties(client):
         "SERVICE=WFS&"
         "VERSION=1.1.0&"
         "REQUEST=GetCapabilities&"
-        "MAP={}"
-    ).format(PROJECT)
+        f"MAP={PROJECT}"
+    )
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
     assert rv.headers.get('Content-Type', '').find('text/xml') == 0
@@ -27,7 +27,7 @@ def test_getcapabilties(client):
     # Formats
     expected = ['SHP', 'KML', 'GPKG']
     for output_format in expected:
-        assert "<ows:Value>{}</ows:Value>".format(output_format) in data, output_format
+        assert f"<ows:Value>{output_format}</ows:Value>" in data, output_format
 
     # Layers
     layers = ['éàIncê', 'lines']
