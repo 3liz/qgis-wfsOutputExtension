@@ -92,7 +92,8 @@ class WFSFilter(QgsServerFilter):
                 'Content-Disposition', f'attachment; filename="{self.typename}.zip"')
         else:
             handler.setResponseHeader(
-                'Content-Disposition', f'attachment; filename="{self.typename}.{format_definition.filename_ext}"')
+                'Content-Disposition',
+                f'attachment; filename="{self.typename}.{format_definition.filename_ext}"')
 
     def sendResponse(self):
         # if format is null, nothing to do
@@ -126,7 +127,8 @@ class WFSFilter(QgsServerFilter):
                     'Content-Disposition', f'attachment; filename="{self.typename}.zip"')
             else:
                 handler.setResponseHeader(
-                    'Content-Disposition', f'attachment; filename="{self.typename}.{format_definition.filename_ext}"')
+                    'Content-Disposition',
+                    f'attachment; filename="{self.typename}.{format_definition.filename_ext}"')
         else:
             handler.clearBody()
 
