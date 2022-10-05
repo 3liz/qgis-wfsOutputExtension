@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.7.1 - 2022-10-05
+
 * Add the CPG file when a shapefile is created
 * Modernize Python by using fstrings everywhere. Python 3.6 required.
 

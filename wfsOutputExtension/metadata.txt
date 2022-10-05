@@ -13,7 +13,7 @@ repository=https://github.com/3liz/qgis-wfsOutputExtension
 homepage=https://github.com/3liz/qgis-wfsOutputExtension
 
 # Done by qgis-plugin-ci, but still need manual editing
-version=1.7.0
+version=1.7.1
 # Done auto by qgis-plugin-ci
 commitNumber=
 commitSha1=
