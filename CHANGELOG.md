@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* Add the CPG file when a shapefile is created
+
 ## 1.7.0 - 2022-03-24
 
 * Fix the field type detection when exporting the layer

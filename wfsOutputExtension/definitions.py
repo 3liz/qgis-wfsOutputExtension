@@ -38,7 +38,7 @@ class OutputFormats(Format, Enum):
         ogr_provider='ESRI Shapefile',
         ogr_datasource_options=(),
         zip=True,
-        ext_to_zip=('shx', 'dbf', 'prj'),
+        ext_to_zip=('shx', 'dbf', 'prj', 'cpg'),
     )
     Tab = Format(
         content_type='application/x-zipped-tab',
