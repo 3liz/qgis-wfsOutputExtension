@@ -2,6 +2,7 @@
 
 ![Icon](wfsOutputExtension/icon.png)
 
+[![QGIS.org](https://img.shields.io/badge/QGIS.org-published-green)](https://plugins.qgis.org/plugins/wfsOutputExtension/)
 [![Tests 🎳](https://github.com/3liz/qgis-wfsOutputExtension/workflows/Tests%20%F0%9F%8E%B3/badge.svg)](https://github.com/3liz/qgis-wfsOutputExtension/actions?query=branch%3Amaster)
 
 QGIS Server Plugin to add additional output formats to WFS GetFeature request.
