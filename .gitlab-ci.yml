@@ -9,6 +9,7 @@ stages:
 
 variables:
     FACTORY_PRODUCT_NAME: wfsOutputExtension
+    FACTORY_PACKAGE_TYPE: plugin
     GITLAB_SLUG: "lizmap/qgis-wfsoutputextension"
 
 flake8:
@@ -31,16 +32,6 @@ test:
     - make -C tests FLAVOR=${QGIS_VERSION}
   tags:
     - factory
-
-# XXX Deprecated
-check_tag:
-  stage: tests
-  only:
-    - tags
-  tags:
-    - fabric
-  script:
-    - .lizcloud/check_tag.sh ${CI_COMMIT_REF_NAME}
 
 version:
   stage: tests
@@ -138,7 +129,7 @@ push-repository:
     CI_ARCHIVE: ${FACTORY_PRODUCT_NAME}.${VERSION}.zip
 
 deploy_snap:
-  extends: .infrav3-package   
+  extends: .infrav3-package
   stage: deploy
   environment:
     name: snap
@@ -146,7 +137,7 @@ deploy_snap:
     CI_STAGING: snapshot
 
 release_prod:
-  extends: .infrav3-package   
+  extends: .infrav3-package
   stage: release
   environment:
     name: production
@@ -180,4 +171,3 @@ tickets:
     - create_ticket.py
   tags:
     - factory-plain
-
