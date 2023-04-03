@@ -27,4 +27,3 @@ test:
 		-e PIP_CACHE_DIR=/.cache \
 		-e PYTEST_ADDOPTS="$(TEST_OPTS)" \
 		$(QGIS_IMAGE) ./run-tests.sh
-
