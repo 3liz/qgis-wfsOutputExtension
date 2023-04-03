@@ -2,9 +2,8 @@ SHELL:=bash
 
 COMMITID=$(shell git rev-parse --short HEAD)
 
-ifdef REGISTRY_URL
-	REGISTRY_PREFIX=$(REGISTRY_URL)/
-endif
+REGISTRY_URL ?= 3liz
+REGISTRY_PREFIX=$(REGISTRY_URL)/
 
 # Qgis version flavor
 FLAVOR:=3.16

@@ -54,7 +54,5 @@ It's possible to set `DEBUG_WFSOUTPUTEXTENSION` to `TRUE` or `1`, the plugin wil
 Using the docker stack to test the plugin :
 
 ```bash
-docker pull 3liz/qgis-platform:3.16
-docker tag 3liz/qgis-platform:3.16 qgis-platform:3.16
 make test
 ```
