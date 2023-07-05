@@ -193,28 +193,12 @@ class WFSFilter(QgsServerFilter):
                 options.datasourceOptions = format_definition.ogr_datasource_options
 
             # write file
-            # noinspection PyUnresolvedReferences
-            if Qgis.QGIS_VERSION_INT >= 32000:
-                # noinspection PyArgumentList
-                write_result, error_message, _, _ = QgsVectorFileWriter.writeAsVectorFormatV3(
-                    output_layer,
-                    output_file,
-                    QgsProject.instance().transformContext(),
-                    options)
-            elif Qgis.QGIS_VERSION_INT >= 31003:
-                # noinspection PyArgumentList
-                write_result, error_message = QgsVectorFileWriter.writeAsVectorFormatV2(
-                    output_layer,
-                    output_file,
-                    QgsProject.instance().transformContext(),
-                    options)
-            else:
-                # QGIS_VERSION_INT < 31003
-                # noinspection PyTypeChecker
-                write_result, error_message = QgsVectorFileWriter.writeAsVectorFormat(
-                    output_layer,
-                    output_file,
-                    options)
+            # noinspection PyArgumentList
+            write_result, error_message, _, _ = QgsVectorFileWriter.writeAsVectorFormatV3(
+                output_layer,
+                output_file,
+                QgsProject.instance().transformContext(),
+                options)
 
             # noinspection PyUnresolvedReferences
             if write_result != QgsVectorFileWriter.NoError:

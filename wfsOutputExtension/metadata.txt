@@ -1,6 +1,6 @@
 [general]
 name=wfsOutputExtension
-qgisMinimumVersion=3.0
+qgisMinimumVersion=3.22
 description=Adds additional output formats to WFS GetFeature request on QGIS Server such as Geopackage, ODS, CSV etc.
 about=wfsOutputExtension adds additional output formats to WFS GetFeature request such as Geopackage, ODS, CSV etc.
 tags=server,format,wfs,ogc,lizmap,web,extension
