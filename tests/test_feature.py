@@ -1,6 +1,6 @@
 import logging
 
-from qgis.core import QgsVectorLayer, Qgis
+from qgis.core import QgsVectorLayer
 from qgis.PyQt.QtCore import NULL, QVariant
 
 LOGGER = logging.getLogger('server')

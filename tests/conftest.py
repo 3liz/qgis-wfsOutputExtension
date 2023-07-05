@@ -196,7 +196,7 @@ def checkQgisVersion(minver: str, maxver: str) -> bool:
             major += 1
         if rev > 99:
             rev = 99
-        return int("{:d}{:02d}{:02d}".format(major,minor,rev))
+        return int(f"{major:d}{minor:02d}{rev:02d}")
 
 
     version = to_int(Qgis.QGIS_VERSION.split('-')[0])
@@ -218,7 +218,7 @@ def find_plugins(pluginpath: str) -> Generator[str,None,None]:
 
         cp = configparser.ConfigParser()
         try:
-            with open(metadatafile, mode='rt') as f:
+            with open(metadatafile) as f:
                 cp.read_file(f)
             if not cp['general'].getboolean('server'):
                 logging.critical(f"{plugin} is not a server plugin")

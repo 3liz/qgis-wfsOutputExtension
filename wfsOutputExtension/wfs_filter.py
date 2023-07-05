@@ -12,7 +12,6 @@ from pathlib import Path
 from xml.dom import minidom
 
 from qgis.core import (
-    Qgis,
     QgsCoordinateReferenceSystem,
     QgsCoordinateTransform,
     QgsProject,
@@ -34,7 +33,7 @@ class ProcessingRequestException(Exception):
 class WFSFilter(QgsServerFilter):
     @log_function
     def __init__(self, server_iface):
-        super(WFSFilter, self).__init__(server_iface)
+        super().__init__(server_iface)
         self.server_iface = server_iface
         self.logger = Logger()
 
@@ -250,6 +249,7 @@ class WFSFilter(QgsServerFilter):
                 zf.close()
 
             f = QFile(zip_file_path)
+            # noinspection PyUnresolvedReferences
             if f.open(QFile.ReadOnly):
                 ba = f.readAll()
                 handler.appendBody(ba)
@@ -259,6 +259,7 @@ class WFSFilter(QgsServerFilter):
             self.logger.info("Sending the output file")
             # return the file created without zip
             f = QFile(output_file)
+            # noinspection PyUnresolvedReferences
             if f.open(QFile.ReadOnly):
                 ba = f.readAll()
                 handler.appendBody(ba)
