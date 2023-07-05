@@ -17,14 +17,17 @@ class Logger:
 
     @staticmethod
     def info(message: str):
+        # noinspection PyTypeChecker
         QgsMessageLog.logMessage(str(message), PLUGIN, Qgis.Info)
 
     @staticmethod
     def warning(message: str):
+        # noinspection PyTypeChecker
         QgsMessageLog.logMessage(str(message), PLUGIN, Qgis.Warning)
 
     @staticmethod
     def critical(message: str):
+        # noinspection PyTypeChecker
         QgsMessageLog.logMessage(str(message), PLUGIN, Qgis.Critical)
 
     @staticmethod

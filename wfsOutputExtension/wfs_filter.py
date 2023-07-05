@@ -96,7 +96,7 @@ class WFSFilter(QgsServerFilter):
                 f'attachment; filename="{self.typename}.{format_definition.filename_ext}"')
 
     def sendResponse(self):
-        # if format is null, nothing to do
+        # if the format is null, nothing to do
         if not self.format:
             return
 
@@ -141,7 +141,7 @@ class WFSFilter(QgsServerFilter):
     def send_output_file(self, handler):
         """ Process the request.
 
-        :raises ProcessingRequestException when there is an errro
+        :raise ProcessingRequestException when there is an error
         """
         format_definition = OutputFormats.find(self.format)
         self.logger.info(f"WFS request to get format {format_definition.ogr_provider}")
@@ -182,6 +182,7 @@ class WFSFilter(QgsServerFilter):
 
             # coordinate transformation
             if format_definition.force_crs:
+                # noinspection PyArgumentList
                 options.ct = QgsCoordinateTransform(
                     output_layer.crs(),
                     QgsCoordinateReferenceSystem(format_definition.force_crs),
@@ -194,12 +195,14 @@ class WFSFilter(QgsServerFilter):
             # write file
             # noinspection PyUnresolvedReferences
             if Qgis.QGIS_VERSION_INT >= 32000:
+                # noinspection PyArgumentList
                 write_result, error_message, _, _ = QgsVectorFileWriter.writeAsVectorFormatV3(
                     output_layer,
                     output_file,
                     QgsProject.instance().transformContext(),
                     options)
             elif Qgis.QGIS_VERSION_INT >= 31003:
+                # noinspection PyArgumentList
                 write_result, error_message = QgsVectorFileWriter.writeAsVectorFormatV2(
                     output_layer,
                     output_file,
@@ -207,11 +210,13 @@ class WFSFilter(QgsServerFilter):
                     options)
             else:
                 # QGIS_VERSION_INT < 31003
+                # noinspection PyTypeChecker
                 write_result, error_message = QgsVectorFileWriter.writeAsVectorFormat(
                     output_layer,
                     output_file,
                     options)
 
+            # noinspection PyUnresolvedReferences
             if write_result != QgsVectorFileWriter.NoError:
                 handler.appendBody(b'')
                 self.logger.critical(error_message)
@@ -282,6 +287,7 @@ class WFSFilter(QgsServerFilter):
     @log_function
     def xsd_for_layer(self, type_name: str, headers: dict) -> bool:
         """ Get the XSD describing the layer. """
+        # noinspection PyArgumentList
         project = QgsProject.instance()
         parameters = {
             "MAP": project.fileName(),
@@ -293,6 +299,7 @@ class WFSFilter(QgsServerFilter):
         }
 
         query_string = "?" + "&".join(f"{key}={value}" for key, value in parameters.items())
+        # noinspection PyUnresolvedReferences
         request = QgsBufferServerRequest(
             query_string,
             QgsServerRequest.GetMethod,
@@ -305,6 +312,7 @@ class WFSFilter(QgsServerFilter):
         # Flush otherwise the body is empty
         response.flush()
         self.logger.info(f"Fetching XSD : HTTP code {response.statusCode()}, request {query_string}")
+        # noinspection PyTypeChecker
         content = bytes(response.body()).decode('utf8')
         if content == "":
             self.logger.critical("Content for the XSD request is empty.")

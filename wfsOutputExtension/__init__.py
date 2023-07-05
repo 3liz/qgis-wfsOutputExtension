@@ -3,11 +3,13 @@ __license__ = 'GPL version 3'
 __email__ = 'info@3liz.org'
 
 
+# noinspection PyPep8Naming
 def classFactory(iface):
     from qgis.PyQt.QtWidgets import QMessageBox
 
     class Nothing:
 
+        # noinspection PyShadowingNames
         def __init__(self, iface):
             """ In QGIS Desktop.
 
@@ -15,7 +17,9 @@ def classFactory(iface):
             """
             self.iface = iface
 
+        # noinspection PyPep8Naming
         def initGui(self):
+            # noinspection PyArgumentList
             QMessageBox.warning(
                 self.iface.mainWindow(),
                 'WfsOutputExtension plugin',
@@ -40,6 +44,7 @@ class WfsOutputExtensionServer:
         server_iface.registerFilter(WFSFilter(server_iface), 50)
 
 
+# noinspection PyPep8Naming
 def serverClassFactory(server_iface):
     """Load wfsOutputExtensionServer class from file wfsOutputExtension.
 
