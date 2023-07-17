@@ -18,6 +18,7 @@ SRCDIR=$(shell realpath ..)
 
 test:
 	mkdir -p $$(pwd)/.local $(LOCAL_HOME)/.cache
+	@echo Do not forget to run docker pull $(QGIS_IMAGE) from time to time
 	docker run --rm --name qgis-wfsoutputextension-test-$(FLAVOR)-$(COMMITID) -w /src/tests \
 		-u $(BECOME_USER) \
 		-v $(SRCDIR):/src \
