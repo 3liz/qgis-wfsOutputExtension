@@ -462,3 +462,43 @@ def test_getfeature_geojson_with_selection(client):
     index = layer.fields().indexFromName('trailing_zero')
     assert '05200' in layer.uniqueValues(index)
     assert layer.fields().at(index).type() == QVariant.String
+
+
+def test_getfeature_fgb(client):
+    """ Test GetFeature as FlatGeobuf. """
+    query_string = (
+        "?"
+        "SERVICE=WFS&"
+        "VERSION=1.1.0&"
+        "REQUEST=GetFeature&"
+        "TYPENAME=lines&"
+        "OUTPUTFORMAT=FGB&"
+        f"MAP={PROJECT}"
+    )
+    rv = client.get(query_string, PROJECT)
+    assert rv.status_code == 200
+    assert 'application/x-fgb' in rv.headers.get('Content-type'), rv.headers
+    layer = _test_vector_layer(rv.file('fgb'), storage='FlatGeobuf')
+    _test_list(
+        layer.fields().names(),
+        ['gml_id', 'id', 'trailing_zero', 'name', 'comment', 'date_time', 'date'])
+
+    # ID
+    index = layer.fields().indexFromName('id')
+    assert layer.uniqueValues(index) == {1, 2, 3, 4}
+    assert layer.fields().at(index).type() == QVariant.Int
+
+    # Trailing 0
+    index = layer.fields().indexFromName('trailing_zero')
+    assert '05200' in layer.uniqueValues(index)
+    assert layer.fields().at(index).type() == QVariant.String
+
+    # Date time
+    index = layer.fields().indexFromName('date_time')
+    assert QDateTime(2023, 8, 1, 12, 0) in layer.uniqueValues(index)
+    assert layer.fields().at(index).type() == QVariant.DateTime
+
+    # Date
+    index = layer.fields().indexFromName('date')
+    assert QDateTime(2023, 8, 1, 0, 0) in layer.uniqueValues(index)
+    assert layer.fields().at(index).type() == QVariant.DateTime

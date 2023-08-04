@@ -4,6 +4,7 @@
 
 * Some Python cleanup
 * Raise the QGIS minimum version to QGIS 3.22 and Python 3.7
+* Add FlatGeobuf support
 
 ## 1.7.1 - 2022-10-05
 

@@ -116,3 +116,12 @@ class OutputFormats(Format, Enum):
         zip=False,
         ext_to_zip=(),
     )
+    Fgb = Format(
+        content_type='application/x-fgb',
+        filename_ext='fgb',
+        force_crs=None,
+        ogr_provider='FlatGeobuf',
+        ogr_datasource_options=(),
+        zip=False,
+        ext_to_zip=(),
+    )
