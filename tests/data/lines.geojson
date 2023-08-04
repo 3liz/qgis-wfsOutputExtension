@@ -2,9 +2,9 @@
 "type": "FeatureCollection",
 "name": "test_lines",
 "features": [
-{ "type": "Feature", "properties": { "id": 1, "trailing_zero": "05200", "name": "éù%@ > 1", "comment": "Accents" }, "geometry": { "type": "LineString", "coordinates": [ [ 3.80, 43.50 ], [ 3.80, 43.60 ] ] } },
-{ "type": "Feature", "properties": { "id": 2, "trailing_zero": "05200", "name": "(]~€ > 2", "comment": "Normal" }, "geometry": { "type": "LineString", "coordinates": [ [ 3.80, 43.60 ], [ 3.90, 43.60 ] ] } },
-{ "type": "Feature", "properties": { "id": 3, "trailing_zero": "05200", "name": "Line < 3", "comment": "Normal"} , "geometry": { "type": "LineString", "coordinates": [ [ 3.90, 43.60 ], [ 3.90, 43.50 ] ] } },
-{ "type": "Feature", "properties": { "id": 4, "trailing_zero": "05200", "name": "Line name", "comment": "Normal"}, "geometry": { "type": "LineString", "coordinates": [ [ 3.90, 43.50 ], [ 3.80, 43.50 ] ] } }
+{ "type": "Feature", "properties": { "id": 1, "trailing_zero": "05200", "name": "éù%@ > 1", "comment": "Accents", "date_time": "2023-08-01T12:00:00", "date": "2023-08-01" }, "geometry": { "type": "LineString", "coordinates": [ [ 3.8, 43.5 ], [ 3.8, 43.6 ] ] } },
+{ "type": "Feature", "properties": { "id": 2, "trailing_zero": "05200", "name": "(]~€ > 2", "comment": "Normal", "date_time": "2023-08-02T13:00:00", "date": "2023-08-02" }, "geometry": { "type": "LineString", "coordinates": [ [ 3.8, 43.6 ], [ 3.9, 43.6 ] ] } },
+{ "type": "Feature", "properties": { "id": 3, "trailing_zero": "05200", "name": "Line < 3", "comment": "Normal", "date_time": "2023-08-03T14:00:00", "date": "2023-08-03" }, "geometry": { "type": "LineString", "coordinates": [ [ 3.9, 43.6 ], [ 3.9, 43.5 ] ] } },
+{ "type": "Feature", "properties": { "id": 4, "trailing_zero": "05200", "name": "Line name", "comment": "Normal", "date_time": "2023-08-04T15:00:00", "date": "2023-08-04" }, "geometry": { "type": "LineString", "coordinates": [ [ 3.9, 43.5 ], [ 3.8, 43.5 ] ] } }
 ]
 }

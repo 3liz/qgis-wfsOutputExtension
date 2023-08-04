@@ -1,7 +1,7 @@
 import logging
 
 from qgis.core import QgsVectorLayer
-from qgis.PyQt.QtCore import NULL, QVariant
+from qgis.PyQt.QtCore import NULL, QDate, QDateTime, QVariant
 
 LOGGER = logging.getLogger('server')
 
@@ -41,7 +41,8 @@ def test_getfeature_gml(client):
     assert rv.status_code == 200
     assert 'text/xml' in rv.headers.get('Content-Type'), rv.headers
     layer = _test_vector_layer(rv.file('gml'), 'GML')
-    _test_list(layer.fields().names(), ['gml_id', 'id', 'trailing_zero', 'name', 'comment'])
+    _test_list(
+        layer.fields().names(), ['gml_id', 'id', 'trailing_zero', 'name', 'comment', 'date_time', 'date'])
 
     index = layer.fields().indexFromName('gml_id')
     assert layer.uniqueValues(index) == {'lines.1', 'lines.2', 'lines.3', 'lines.4'}
@@ -56,6 +57,16 @@ def test_getfeature_gml(client):
     index = layer.fields().indexFromName('trailing_zero')
     # field detected as integer, so losing the trailing zero
     assert layer.uniqueValues(index) == {5200}
+
+    # Date time
+    index = layer.fields().indexFromName('date_time')
+    assert '2023-08-01T12:00:00.000' in layer.uniqueValues(index)
+    assert layer.fields().at(index).type() == QVariant.String
+
+    # Date
+    index = layer.fields().indexFromName('date')
+    assert '2023-08-01' in layer.uniqueValues(index)
+    assert layer.fields().at(index).type() == QVariant.String
 
 
 def test_getfeature_kml(client):
@@ -80,6 +91,7 @@ def test_getfeature_kml(client):
         [
             'Name', 'description', 'timestamp', 'begin', 'end', 'altitudeMode', 'tessellate', 'extrude',
             'visibility', 'drawOrder', 'icon', 'gml_id', 'id', 'trailing_zero', 'comment',
+            'date_time', 'date',
         ]
     )
 
@@ -109,7 +121,9 @@ def test_getfeature_gpkg(client):
     assert rv.status_code == 200
     assert 'application/geopackage+vnd.sqlite3' in rv.headers.get('Content-type'), rv.headers
     layer = _test_vector_layer(rv.file('gpkg'), 'GPKG')
-    _test_list(layer.fields().names(), ['fid', 'gml_id', 'id', 'trailing_zero', 'name', 'comment'])
+    _test_list(
+        layer.fields().names(),
+        ['fid', 'gml_id', 'id', 'trailing_zero', 'name', 'comment', 'date_time', 'date'])
 
     # ID
     index = layer.fields().indexFromName('id')
@@ -141,7 +155,8 @@ def test_getfeature_gpx(client):
     layer = _test_vector_layer(rv.file('gpx') + '|layername=routes', 'GPX')
     _test_list(layer.fields().names(), [
         'name', 'cmt', 'desc', 'src', 'link1_href', 'link1_text', 'link1_type', 'link2_href', 'link2_text',
-        'ogr_trailing_zero', 'ogr_comment', 'link2_type', 'number', 'type', 'ogr_gml_id', 'ogr_id'])
+        'ogr_trailing_zero', 'ogr_comment', 'link2_type', 'number', 'type', 'ogr_gml_id', 'ogr_id',
+        'ogr_date_time', 'ogr_date'])
 
     # GPX is a specific format with some pre-defined field names
     # ID
@@ -179,7 +194,9 @@ def test_getfeature_ods(client):
     assert rv.status_code == 200
     assert 'application/vnd.oasis.opendocument.spreadsheet' in rv.headers.get('Content-type'), rv.headers
     layer = _test_vector_layer(rv.file('ods'), 'ODS')
-    _test_list(layer.fields().names(), ['gml_id', 'id', 'trailing_zero', 'name', 'comment'])
+    _test_list(
+        layer.fields().names(),
+        ['gml_id', 'id', 'trailing_zero', 'name', 'comment', 'date_time', 'date'])
 
     # ID
     index = layer.fields().indexFromName('id')
@@ -190,6 +207,16 @@ def test_getfeature_ods(client):
     index = layer.fields().indexFromName('trailing_zero')
     assert '05200' in layer.uniqueValues(index)
     assert layer.fields().at(index).type() == QVariant.String
+
+    # Date time
+    index = layer.fields().indexFromName('date_time')
+    assert QDateTime(2023, 8, 1, 12, 0) in layer.uniqueValues(index)
+    assert layer.fields().at(index).type() == QVariant.DateTime
+
+    # Date
+    index = layer.fields().indexFromName('date')
+    assert QDate(2023, 8, 1) in layer.uniqueValues(index)
+    assert layer.fields().at(index).type() == QVariant.Date
 
 
 def test_getfeature_geojson(client):
@@ -207,7 +234,7 @@ def test_getfeature_geojson(client):
     assert rv.status_code == 200
     assert 'application/vnd.geo+json' in rv.headers.get('Content-Type'), rv.headers
     layer = _test_vector_layer(rv.file('geojson'), 'GeoJSON')
-    _test_list(layer.fields().names(), ['id', 'trailing_zero', 'name', 'comment'])
+    _test_list(layer.fields().names(), ['id', 'trailing_zero', 'name', 'comment', 'date_time', 'date'])
 
     # ID
     index = layer.fields().indexFromName('id')
@@ -236,7 +263,9 @@ def test_getfeature_excel(client):
     expected = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     assert expected in rv.headers.get('Content-type'), rv.headers
     layer = _test_vector_layer(rv.file('xlsx'), 'XLSX')
-    _test_list(layer.fields().names(), ['gml_id', 'id', 'trailing_zero', 'name', 'comment'])
+    _test_list(
+        layer.fields().names(),
+        ['gml_id', 'id', 'trailing_zero', 'name', 'comment', 'date_time', 'date'])
 
     # ID
     index = layer.fields().indexFromName('id')
@@ -247,6 +276,16 @@ def test_getfeature_excel(client):
     index = layer.fields().indexFromName('trailing_zero')
     assert '05200' in layer.uniqueValues(index)
     assert layer.fields().at(index).type() == QVariant.String
+
+    # Date time
+    index = layer.fields().indexFromName('date_time')
+    assert QDateTime(2023, 8, 1, 12, 0) in layer.uniqueValues(index)
+    assert layer.fields().at(index).type() == QVariant.DateTime
+
+    # Date
+    index = layer.fields().indexFromName('date')
+    assert QDate(2023, 8, 1) in layer.uniqueValues(index)
+    assert layer.fields().at(index).type() == QVariant.Date
 
 
 def test_getfeature_csv(client):
@@ -264,7 +303,9 @@ def test_getfeature_csv(client):
     assert rv.status_code == 200
     assert 'text/csv' in rv.headers.get('Content-type'), rv.headers
     layer = _test_vector_layer(rv.file('csv'), 'CSV')
-    _test_list(layer.fields().names(), ['gml_id', 'id', 'trailing_zero', 'name', 'comment'])
+    _test_list(
+        layer.fields().names(),
+        ['gml_id', 'id', 'trailing_zero', 'name', 'comment', 'date_time', 'date'])
 
     # ID
     # All fields are loaded as string
@@ -275,6 +316,16 @@ def test_getfeature_csv(client):
     # Trailing 0
     index = layer.fields().indexFromName('trailing_zero')
     assert '05200' in layer.uniqueValues(index)
+    assert layer.fields().at(index).type() == QVariant.String
+
+    # Date time
+    index = layer.fields().indexFromName('date_time')
+    assert '2023/08/01 12:00:00' in layer.uniqueValues(index)
+    assert layer.fields().at(index).type() == QVariant.String
+
+    # Date
+    index = layer.fields().indexFromName('date')
+    assert '2023/08/01' in layer.uniqueValues(index)
     assert layer.fields().at(index).type() == QVariant.String
 
 
@@ -294,7 +345,7 @@ def test_getfeature_shapefile(client):
     assert "application/x-zipped-shp" in rv.headers.get('Content-type'), rv.headers
     layer = _test_vector_layer('/vsizip/' + rv.file('zip'), 'ESRI Shapefile')
     # shapefile is splitting trailing_zero to trailing_z
-    _test_list(layer.fields().names(), ['gml_id', 'id', 'trailing_z', 'name', 'comment'])
+    _test_list(layer.fields().names(), ['gml_id', 'id', 'trailing_z', 'name', 'comment', 'date_time', 'date'])
 
     # ID
     index = layer.fields().indexFromName('id')
@@ -322,7 +373,9 @@ def test_getfeature_tab(client):
     assert rv.status_code == 200
     assert 'application/x-zipped-tab' in rv.headers.get('Content-type'), rv.headers
     layer = _test_vector_layer('/vsizip/' + rv.file('zip') + '/lines.tab', 'MapInfo File')
-    _test_list(layer.fields().names(), ['gml_id', 'id', 'trailing_zero', 'name', 'comment'])
+    _test_list(
+        layer.fields().names(),
+        ['gml_id', 'id', 'trailing_zero', 'name', 'comment', 'date_time', 'date'])
 
     # ID
     index = layer.fields().indexFromName('id')
@@ -350,7 +403,9 @@ def test_getfeature_mif(client):
     assert rv.status_code == 200
     assert 'application/x-zipped-mif' in rv.headers.get('Content-type'), rv.headers
     layer = _test_vector_layer('/vsizip/' + rv.file('zip') + '/lines.mif', 'MapInfo File')
-    _test_list(layer.fields().names(), ['gml_id', 'id', 'trailing_zero', 'name', 'comment'])
+    _test_list(
+        layer.fields().names(),
+        ['gml_id', 'id', 'trailing_zero', 'name', 'comment', 'date_time', 'date'])
 
     # ID
     index = layer.fields().indexFromName('id')
@@ -396,7 +451,7 @@ def test_getfeature_geojson_with_selection(client):
     assert rv.status_code == 200
     assert 'application/vnd.geo+json' in rv.headers.get('Content-Type'), rv.headers
     layer = _test_vector_layer(rv.file('geojson'), 'GeoJSON', count=2)
-    _test_list(layer.fields().names(), ['id', 'trailing_zero', 'name', 'comment'])
+    _test_list(layer.fields().names(), ['id', 'trailing_zero', 'name', 'comment', 'date_time', 'date'])
 
     # ID
     index = layer.fields().indexFromName('id')
