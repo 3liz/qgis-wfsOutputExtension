@@ -24,7 +24,8 @@ PLAUSIBLE_URL_TEST = "https://plausible.snap.3liz.net/api/event"
 
 
 # For testing purpose, to test.
-# Similar to QGIS dashboard https://feed.qgis.org/metabase/public/dashboard/df81071d-4c75-45b8-a698-97b8649d7228
+# Similar to QGIS dashboard
+# https://feed.qgis.org/metabase/public/dashboard/df81071d-4c75-45b8-a698-97b8649d7228
 # We only collect data listed in the list below
 # and the country according to IP address.
 # The IP is not stored by Plausible Community Edition https://github.com/plausible/analytics
@@ -118,13 +119,15 @@ class Plausible:
         }
 
         # noinspection PyArgumentList
-        r: QNetworkReply = QgsNetworkAccessManager.instance().post(request, QByteArray(str.encode(json.dumps(data))))
+        r: QNetworkReply = QgsNetworkAccessManager.instance().post(
+            request, QByteArray(str.encode(json.dumps(data))))
         if not is_lizcloud:
             return True
 
         logger = Logger()
         message = (
-            f"Request HTTP OS process '{os.getpid()}' sent to '{plausible_url}' with domain '{plausible_domain} : ")
+            f"Request HTTP OS process '{os.getpid()}' sent to '{plausible_url}' with domain "
+            f"'{plausible_domain} : ")
         if r.error() == QNetworkReply.NoError:
             logger.info(message + "OK")
         else:

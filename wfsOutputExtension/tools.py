@@ -5,11 +5,9 @@ __email__ = 'info@3liz.org'
 import configparser
 
 from pathlib import Path
-from typing import Dict, Tuple, Union
+from typing import Union
 
 from qgis.core import Qgis, QgsMessageLog
-
-from atlasprint.logger import Logger
 
 
 def version() -> str:
