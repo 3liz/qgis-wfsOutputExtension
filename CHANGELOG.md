@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 1.8.1 - 2024-06-05
+
+* Minor code cleanup
+
 ## 1.8.0 - 2023-07-04
 
 * Some Python cleanup
