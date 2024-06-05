@@ -2,6 +2,9 @@ __copyright__ = 'Copyright 2021, 3Liz'
 __license__ = 'GPL version 3'
 __email__ = 'info@3liz.org'
 
+from wfsOutputExtension.logging import Logger
+from wfsOutputExtension.plausible import Plausible
+
 
 # noinspection PyPep8Naming
 def classFactory(iface):
@@ -39,6 +42,15 @@ class WfsOutputExtensionServer:
 
     def __init__(self, server_iface):
         self.serverIface = server_iface
+        self.logger = Logger()
+
+        # noinspection PyBroadException
+        try:
+            self.plausible = Plausible()
+            self.plausible.request_stat_event()
+        except Exception as e:
+            self.logger.log_exception(e)
+            self.logger.critical('Error while calling the API stats')
 
         from .wfs_filter import WFSFilter  # NOQA ABS101
         server_iface.registerFilter(WFSFilter(server_iface), 50)
