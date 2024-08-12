@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 1.8.2 - 2024-08-12
+
+* Minor code cleanup
+
+
 ## 1.8.1 - 2024-06-05
 
 * Minor code cleanup
