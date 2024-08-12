@@ -26,6 +26,7 @@ test:
       - QGIS_VERSION: [
         "3.22",
         "3.28",
+        "3.34",
         "nightly-release",
       ]
   script:
