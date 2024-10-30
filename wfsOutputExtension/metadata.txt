@@ -25,3 +25,4 @@ icon=icon.png
 experimental=False
 deprecated=False
 server=True
+supportsQt6=True
