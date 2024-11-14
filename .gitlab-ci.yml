@@ -57,7 +57,7 @@ package-zip:
       package ${VERSION}
       --plugin-repo-url https://packages.3liz.org/pub/${FACTORY_PRODUCT_NAME}-qgis-plugin/${STATUS}/
   tags:
-    - infrav3-plain
+    - factory-plain
   artifacts:
     untracked: true
     expose_as: 'QGIS package'
@@ -114,38 +114,6 @@ push-repository:
   tags:
     - fabric
 
-#
-# Infrav3 packaging
-#
-
-.infrav3-package:
-  dependencies:
-    - version
-    - package-zip
-  script:
-    - $FACTORY_SCRIPTS/make-package-$CI_STAGING qgis_wfsoutput ${VERSION} ${FACTORY_PRODUCT_NAME} qgis-plugin
-  tags:
-    - infrav3
-  variables:
-    CI_ARCHIVE: ${FACTORY_PRODUCT_NAME}.${VERSION}.zip
-
-deploy_snap:
-  extends: .infrav3-package
-  stage: deploy
-  environment:
-    name: snap
-  variables:
-    CI_STAGING: snapshot
-
-release_prod:
-  extends: .infrav3-package
-  stage: release
-  environment:
-    name: production
-  only:
-    - tags
-  variables:
-    CI_STAGING: release
 
 #
 # Infrav2 packaging
