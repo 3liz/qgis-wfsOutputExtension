@@ -19,7 +19,12 @@ from qgis.core import (
     QgsVectorLayer,
 )
 from qgis.PyQt.QtCore import QFile, QTemporaryFile
-from qgis.server import QgsServerFilter, QgsBufferServerRequest, QgsServerRequest, QgsBufferServerResponse
+from qgis.server import (
+    QgsBufferServerRequest,
+    QgsBufferServerResponse,
+    QgsServerFilter,
+    QgsServerRequest,
+)
 
 from wfsOutputExtension.definitions import OutputFormats
 from wfsOutputExtension.logging import Logger, log_function
