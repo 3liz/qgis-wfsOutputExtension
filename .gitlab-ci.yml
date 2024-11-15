@@ -13,11 +13,12 @@ variables:
     GITLAB_SLUG: "lizmap/qgis-wfsoutputextension"
 
 flake8:
+  image: ${REGISTRY_URL}/factory-ci-runner:python
   stage: tests
   script:
     - flake8
   tags:
-    - factory
+    - factory-plain
 
 test:
   stage: tests
@@ -32,7 +33,7 @@ test:
   script:
     - make -C tests FLAVOR=${QGIS_VERSION}
   tags:
-    - factory
+    - factory-dind
 
 version:
   stage: tests
@@ -66,6 +67,7 @@ package-zip:
       - plugins.xml
 
 push-zip-fetch-repo:
+  image: ${REGISTRY_URL}/factory-ci-runner:fabric-ci
   dependencies:
     - version
     - package-zip
@@ -98,13 +100,14 @@ edit-repository:
   script:
     - qgis-plugin-repo merge plugins.xml tmp_repository/*.xml
   tags:
-    - factory
+    - factory-dind
   artifacts:
     untracked: true
     paths:
       - tmp_repository/*.xml
 
 push-repository:
+  image: ${REGISTRY_URL}/factory-ci-runner:fabric-ci
   stage: qgis-repository-push
   dependencies:
     - version
@@ -120,6 +123,7 @@ push-repository:
 #
 
 deploy_snap_v2:
+  image: ${REGISTRY_URL}/factory-ci-runner:fabric-ci
   stage: deploy
   dependencies:
     - push-repository
