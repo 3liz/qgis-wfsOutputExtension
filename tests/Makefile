@@ -6,7 +6,7 @@ REGISTRY_URL ?= 3liz
 REGISTRY_PREFIX=$(REGISTRY_URL)/
 
 # Qgis version flavor
-FLAVOR:=3.22
+FLAVOR:=ltr
 
 BECOME_USER:=$(shell id -u)
 

@@ -4,6 +4,8 @@ wfsOutputExtension.zip
 # C extensions
 *.so
 
+.env
+
 # Python
 .venv/
 venv/

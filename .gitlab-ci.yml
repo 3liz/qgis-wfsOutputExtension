@@ -28,6 +28,7 @@ test:
         "3.22",
         "3.28",
         "3.34",
+        "3.40",
         "nightly-release",
       ]
   script:
