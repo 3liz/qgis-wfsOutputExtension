@@ -12,7 +12,7 @@ PROJECT = 'lines.qgs'
 def test_describefeaturetype(client):
     """ Test DescribeFeatureType. """
     # XMLSCHEMA is used for the sub request to get the XSD
-    outputs = ('XMLSCHEMA', )
+    outputs = ('XMLSCHEMA', 'GEOJSON')
     for output in outputs:
         query_string = (
             "?"
