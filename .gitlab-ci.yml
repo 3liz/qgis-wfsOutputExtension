@@ -31,10 +31,11 @@ test:
         "release",
         "nightly-release",
       ]
+  image: ${REGISTRY_URL}/factory-ci-runner:qgis-${QGIS_VERSION}
   script:
-    - make -C tests FLAVOR=${QGIS_VERSION}
+    - make test
   tags:
-    - factory-dind
+    - factory-plain
 
 version:
   stage: tests
@@ -66,6 +67,10 @@ package-zip:
     paths:
       - ${FACTORY_PRODUCT_NAME}.${VERSION}.zip
       - plugins.xml
+  only:
+    refs:
+    - tags
+    - master
 
 push-zip-fetch-repo:
   image: ${REGISTRY_URL}/factory-ci-runner:fabric-ci
@@ -89,6 +94,11 @@ push-zip-fetch-repo:
   artifacts:
     paths:
       - tmp_repository/*.xml
+  only:
+    refs:
+    - tags
+    - master
+
 
 edit-repository:
   image:  ${REGISTRY_URL}/factory-ci-runner:factory-ci
@@ -106,6 +116,10 @@ edit-repository:
     untracked: true
     paths:
       - tmp_repository/*.xml
+  only:
+    refs:
+    - tags
+    - master
 
 push-repository:
   image: ${REGISTRY_URL}/factory-ci-runner:fabric-ci
@@ -117,7 +131,10 @@ push-repository:
     - upload_folder_to_packages_server tmp_repository/ pub/server-plugins-repository/${STATUS}/
   tags:
     - fabric
-
+  only:
+    refs:
+    - tags
+    - master
 
 #
 # Infrav2 packaging
@@ -134,6 +151,10 @@ deploy_snap_v2:
     name: snap
   tags:
     - fabric
+  only:
+    refs:
+    - tags
+    - master
 
 tickets:
   stage: release
