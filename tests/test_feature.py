@@ -1,6 +1,6 @@
 import logging
 
-from qgis.core import QgsVectorLayer
+from qgis.core import Qgis, QgsVectorLayer
 from qgis.PyQt.QtCore import NULL, QDate, QDateTime, QVariant
 
 LOGGER = logging.getLogger('server')
@@ -15,7 +15,7 @@ PROJECT = 'lines.qgs'
 def _test_list(list_a, list_b):
     assert len(list_a) == len(list_b)
     for item in list_a:
-        assert item in list_b
+        assert item in list_b, list_a
 
 
 def _test_vector_layer(file_path, storage, provider='ogr', count=4) -> QgsVectorLayer:
@@ -41,8 +41,11 @@ def test_getfeature_gml(client):
     assert rv.status_code == 200
     assert 'text/xml' in rv.headers.get('Content-Type'), rv.headers
     layer = _test_vector_layer(rv.file('gml'), 'GML')
-    _test_list(
-        layer.fields().names(), ['gml_id', 'id', 'trailing_zero', 'name', 'comment', 'date_time', 'date'])
+    expected_fields = ['gml_id']
+    if Qgis.versionInt() >= 33400:
+        expected_fields.extend(['lowerCorner', 'upperCorner'])
+    expected_fields.extend(['id', 'trailing_zero', 'name', 'comment', 'date_time', 'date'])
+    _test_list(layer.fields().names(), expected_fields)
 
     index = layer.fields().indexFromName('gml_id')
     assert layer.uniqueValues(index) == {'lines.1', 'lines.2', 'lines.3', 'lines.4'}
