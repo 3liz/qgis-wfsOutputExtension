@@ -52,7 +52,7 @@ class WfsOutputExtensionServer:
             self.logger.log_exception(e)
             self.logger.critical('Error while calling the API stats')
 
-        from .wfs_filter import WFSFilter  # NOQA ABS101
+        from .wfs_filter import WFSFilter
         server_iface.registerFilter(WFSFilter(server_iface), 50)
 
 

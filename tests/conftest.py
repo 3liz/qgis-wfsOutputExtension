@@ -6,6 +6,10 @@ import sys
 import tempfile
 import warnings
 
+
+from pathlib import Path
+
+
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     try:
@@ -95,9 +99,10 @@ NAMESPACES = {
 
 class OWSResponse:
 
-    def __init__(self, resp: QgsBufferServerResponse) -> None:
+    def __init__(self, resp: QgsBufferServerResponse, dir: Path) -> None:
         self._resp = resp
         self._xml = None
+        self._dir = dir
 
     @property
     def xml(self) -> 'xml':
@@ -110,7 +115,11 @@ class OWSResponse:
         return bytes(self._resp.body())
 
     def file(self, extension) -> str:
-        path = os.path.join(tempfile.mkdtemp(), 'test.' + extension)
+        _, path = tempfile.mkstemp(
+            prefix="test-",
+            suffix=f".{extension}",
+            dir=str(self._dir.joinpath('tmp')),
+        )
         f = open(path, 'wb')
         f.write(self.content)
         f.close()
@@ -133,6 +142,7 @@ class OWSResponse:
         return ' '.join(e.text for e in self.xpath(path))
 
 
+
 @pytest.fixture(scope='session')
 def client(request):
     """ Return a qgis server instance
@@ -148,6 +158,7 @@ def client(request):
             # Activate debug headers
             os.environ['QGIS_WMTS_CACHE_DEBUG_HEADERS'] = 'true'
 
+            self.rootdir  = request.config.rootdir
             self.datapath = request.config.rootdir.join('data')
             self.server = QgsServer()
 
@@ -175,7 +186,7 @@ def client(request):
             else:
                 qgsproject = None
             self.server.handleRequest(request, response, project=qgsproject)
-            return OWSResponse(response)
+            return OWSResponse(response, dir=Path(self.rootdir.strpath))
 
     return _Client()
 

@@ -85,7 +85,7 @@ def test_getfeature_kml(client):
     )
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
-    assert 'application/vnd.google-earth.kml+xml' in rv.headers.get('Content-type'), rv.headers
+    assert 'application/vnd.google-earth.kml+xml' in rv.headers.get('Content-Type'), rv.headers
     layer = _test_vector_layer(rv.file('kml'), 'LIBKML')
     assert layer.crs().authid() == 'EPSG:4326'
 
@@ -122,7 +122,7 @@ def test_getfeature_gpkg(client):
     )
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
-    assert 'application/geopackage+vnd.sqlite3' in rv.headers.get('Content-type'), rv.headers
+    assert 'application/geopackage+vnd.sqlite3' in rv.headers.get('Content-Type'), rv.headers
     layer = _test_vector_layer(rv.file('gpkg'), 'GPKG')
     _test_list(
         layer.fields().names(),
@@ -152,7 +152,7 @@ def test_getfeature_gpx(client):
     )
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
-    assert 'application/gpx+xml' in rv.headers.get('Content-type'), rv.headers
+    assert 'application/gpx+xml' in rv.headers.get('Content-Type'), rv.headers
 
     # Lines is translated as routes
     layer = _test_vector_layer(rv.file('gpx') + '|layername=routes', 'GPX')
@@ -195,7 +195,7 @@ def test_getfeature_ods(client):
     )
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
-    assert 'application/vnd.oasis.opendocument.spreadsheet' in rv.headers.get('Content-type'), rv.headers
+    assert 'application/vnd.oasis.opendocument.spreadsheet' in rv.headers.get('Content-Type'), rv.headers
     layer = _test_vector_layer(rv.file('ods'), 'ODS')
     _test_list(
         layer.fields().names(),
@@ -264,7 +264,7 @@ def test_getfeature_excel(client):
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
     expected = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    assert expected in rv.headers.get('Content-type'), rv.headers
+    assert expected in rv.headers.get('Content-Type'), rv.headers
     layer = _test_vector_layer(rv.file('xlsx'), 'XLSX')
     _test_list(
         layer.fields().names(),
@@ -304,7 +304,7 @@ def test_getfeature_csv(client):
     )
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
-    assert 'text/csv' in rv.headers.get('Content-type'), rv.headers
+    assert 'text/csv' in rv.headers.get('Content-Type'), rv.headers
     layer = _test_vector_layer(rv.file('csv'), 'CSV')
     _test_list(
         layer.fields().names(),
@@ -345,7 +345,7 @@ def test_getfeature_shapefile(client):
     )
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
-    assert "application/x-zipped-shp" in rv.headers.get('Content-type'), rv.headers
+    assert "application/x-zipped-shp" in rv.headers.get('Content-Type'), rv.headers
     layer = _test_vector_layer('/vsizip/' + rv.file('zip'), 'ESRI Shapefile')
     # shapefile is splitting trailing_zero to trailing_z
     _test_list(layer.fields().names(), ['gml_id', 'id', 'trailing_z', 'name', 'comment', 'date_time', 'date'])
@@ -374,7 +374,7 @@ def test_getfeature_tab(client):
     )
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
-    assert 'application/x-zipped-tab' in rv.headers.get('Content-type'), rv.headers
+    assert 'application/x-zipped-tab' in rv.headers.get('Content-Type'), rv.headers
     layer = _test_vector_layer('/vsizip/' + rv.file('zip') + '/lines.tab', 'MapInfo File')
     _test_list(
         layer.fields().names(),
@@ -404,7 +404,7 @@ def test_getfeature_mif(client):
     )
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
-    assert 'application/x-zipped-mif' in rv.headers.get('Content-type'), rv.headers
+    assert 'application/x-zipped-mif' in rv.headers.get('Content-Type'), rv.headers
     layer = _test_vector_layer('/vsizip/' + rv.file('zip') + '/lines.mif', 'MapInfo File')
     _test_list(
         layer.fields().names(),
@@ -434,7 +434,7 @@ def test_getfeature_layer_name_with_accent(client):
     )
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
-    assert 'text/csv' in rv.headers.get('Content-type'), rv.headers
+    assert 'text/csv' in rv.headers.get('Content-Type'), rv.headers
     assert 'attachment; filename="éàIncê.csv"' in rv.headers.get('Content-Disposition')
 
 
@@ -480,7 +480,7 @@ def test_getfeature_fgb(client):
     )
     rv = client.get(query_string, PROJECT)
     assert rv.status_code == 200
-    assert 'application/x-fgb' in rv.headers.get('Content-type'), rv.headers
+    assert 'application/x-fgb' in rv.headers.get('Content-Type'), rv.headers
     layer = _test_vector_layer(rv.file('fgb'), storage='FlatGeobuf')
     _test_list(
         layer.fields().names(),
