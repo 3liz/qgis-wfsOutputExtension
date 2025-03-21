@@ -6,6 +6,7 @@ import os
 import tempfile
 
 from dataclasses import dataclass
+from io import BufferedReader
 from pathlib import Path
 from typing import Optional
 from xml.dom import minidom
@@ -49,10 +50,27 @@ class Context:
     lock_dir: Optional[tempfile.TemporaryDirectory] = None
     all_gml: bool = False
     has_errors: bool = False
+    request_id: str = ""
 
 
 TRUESTR = ('yes', 'true', '1')
 TMPDIR_PREFIX = "QGIS_WfsOutputExtension-"
+
+# Chunk size in bytes set to 1Mo
+CHUNK_SIZE = 1024 * 1024
+
+
+# Stream bytes
+def stream_bytes(handler: QgsRequestHandler, stream: BufferedReader):
+    # Pre-allocate input buffer and use readinto(...)
+    # NOTE: we should be able to read content directly into the internal
+    # QByteArray
+    data = bytearray(CHUNK_SIZE)
+    nbytes = stream.readinto(data)
+    while nbytes:
+        handler.appendBody(data[:nbytes])
+        handler.sendResponse()  # Call flush()
+        nbytes = stream.readinto(data)
 
 
 class WFSFilter(QgsServerFilter):
@@ -103,6 +121,7 @@ class WFSFilter(QgsServerFilter):
             temp_dir = Path(lock_dir.name)
 
         base_name_target = f"to-{output_format}"
+        request_id = handler.requestHeader("X-Request-Id")
 
         # Create the request context
         self.context = Context(
@@ -113,7 +132,10 @@ class WFSFilter(QgsServerFilter):
             base_name_target=base_name_target,
             lock_dir=lock_dir,
             temp_dir=temp_dir,
+            request_id=request_id,
         )
+
+        self.logger.info(f"REQ_ID:{request_id or '-'}\t request accepted")
 
         # set headers
         handler.clear()
@@ -199,7 +221,6 @@ class WFSFilter(QgsServerFilter):
         self.logger.info(f"Temporary GML file is {gml_url}")
 
         if not output_layer.isValid():
-            handler.appendBody(b'')
             raise ProcessingRequestException(f'Output layer {gml_url} is not valid.')
 
         # Temporary file where to write the output
@@ -283,14 +304,14 @@ class WFSFilter(QgsServerFilter):
                 zf.close()
 
             with zip_file_path.open("rb") as f:
-                handler.appendBody(f.read())
+                stream_bytes(handler, f)
                 return True
 
         else:
             self.logger.info("Sending the output file")
             # return the file created without zip
             with output_file.open("rb") as f:
-                handler.appendBody(f.read())
+                stream_bytes(handler, f)
                 return True
 
         handler.appendBody(b'')
