@@ -7,8 +7,6 @@ from typing import NamedTuple, Union
 
 PLUGIN = 'WfsOutputExtension'
 
-# With Python 3.7, switch to dataclass
-
 
 class Format(NamedTuple):
     content_type: str

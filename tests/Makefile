@@ -1,5 +1,9 @@
 SHELL:=bash
 
+DEPTH=..
+
+topsrcdir=$(shell realpath $(DEPTH))
+
 COMMITID=$(shell git rev-parse --short HEAD)
 
 install-requirements:
@@ -9,7 +13,9 @@ install-requirements:
 test: export QGIS_SERVER_LOG_FILE="/src/tests/qgis_server.log"
 test: export QGIS_SERVER_LOG_LEVEL=0
 test: install-requirements
-	pytest -v --qgis-plugins=..
+	pytest -v --qgis-plugins=$(topsrcdir)
+clean:
+	rm -r ./tmp/test-*
 
 
 # Use docker image

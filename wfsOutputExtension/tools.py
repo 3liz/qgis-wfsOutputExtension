@@ -30,7 +30,7 @@ def version() -> str:
         return config["general"]["version"]
 
 
-def to_bool(val: Union[str, int, float, bool], default_value: bool = True) -> bool:
+def to_bool(val: Union[str, int, float, bool, None], default_value: bool = True) -> bool:
     """ Convert config value to boolean """
     if isinstance(val, str):
         # For string, compare lower value to True string
