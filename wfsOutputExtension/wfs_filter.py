@@ -21,6 +21,7 @@ from qgis.server import (
     QgsBufferServerRequest,
     QgsBufferServerResponse,
     QgsRequestHandler,
+    QgsServerException,
     QgsServerFilter,
     QgsServerInterface,
     QgsServerRequest,
@@ -47,6 +48,7 @@ class Context:
     # Optional for debugging and keep the intermediate files
     lock_dir: Optional[tempfile.TemporaryDirectory] = None
     all_gml: bool = False
+    has_errors: bool = False
 
 
 TRUESTR = ('yes', 'true', '1')
@@ -66,6 +68,9 @@ class WFSFilter(QgsServerFilter):
 
     @log_function
     def requestReady(self):
+
+        self.context = None
+
         handler = self.serverInterface().requestHandler()
         params = handler.parameterMap()
 
@@ -83,6 +88,7 @@ class WFSFilter(QgsServerFilter):
         output_format = params.get('OUTPUTFORMAT', '').lower()
         format_definition = OutputFormats.find(output_format)
         if not format_definition:
+            # Fallback to default
             return
 
         handler.setParameter('OUTPUTFORMAT', 'GML2')
@@ -122,7 +128,7 @@ class WFSFilter(QgsServerFilter):
 
     def sendResponse(self) -> None:
         # if the context is null, nothing to do
-        if not self.context:
+        if not self.context or self.context.has_errors:
             return
 
         context = self.context
@@ -131,7 +137,7 @@ class WFSFilter(QgsServerFilter):
 
         # write body in GML temp file
         data = handler.body().data().decode('utf8')
-        output_file = self.context.temp_dir.joinpath(f'{context.filename}.gml')
+        output_file = context.temp_dir.joinpath(f'{context.filename}.gml')
 
         with output_file.open('ab') as f:
             if data.find('xsi:schemaLocation') == -1:
@@ -161,12 +167,18 @@ class WFSFilter(QgsServerFilter):
             handler.clearBody()
 
         if data.rstrip().endswith('</wfs:FeatureCollection>'):
-            # all the gml has been intercepted
-            context.all_gml = True
-            self.send_output_file(handler, context)
+            try:
+                # all the gml has been intercepted
+                context.all_gml = True
+                self.send_output_file(handler, context)
+            except Exception as e:
+                self.logger.log_exception(e)
+                context.has_errors = True
+                handler.clearBody()
+                handler.setServiceException(QgsServerException("Internal error", 500))
 
     @log_function
-    def send_output_file(self, handler: QgsRequestHandler, context: Context) -> None:
+    def send_output_file(self, handler: QgsRequestHandler, context: Context) -> bool:
         """ Process the request.
 
         :raise ProcessingRequestException when there is an error
@@ -197,43 +209,38 @@ class WFSFilter(QgsServerFilter):
 
         self.logger.info(f"Temporary {format_definition.filename_ext} file is {output_file}")
 
-        try:
-            # create save options
-            options = QgsVectorFileWriter.SaveVectorOptions()
-            # driver name
-            options.driverName = format_definition.ogr_provider
-            # file encoding
-            options.fileEncoding = 'utf-8'
+        # create save options
+        options = QgsVectorFileWriter.SaveVectorOptions()
+        # driver name
+        options.driverName = format_definition.ogr_provider
+        # file encoding
+        options.fileEncoding = 'utf-8'
 
-            # coordinate transformation
-            if format_definition.force_crs:
-                # noinspection PyArgumentList
-                options.ct = QgsCoordinateTransform(
-                    output_layer.crs(),
-                    QgsCoordinateReferenceSystem(format_definition.force_crs),
-                    QgsProject.instance())
-
-            # datasource options
-            if format_definition.ogr_datasource_options:
-                options.datasourceOptions = format_definition.ogr_datasource_options
-
-            # write file
+        # coordinate transformation
+        if format_definition.force_crs:
             # noinspection PyArgumentList
-            write_result, error_message, _, _ = QgsVectorFileWriter.writeAsVectorFormatV3(
-                output_layer,
-                str(output_file),
-                QgsProject.instance().transformContext(),
-                options)
+            options.ct = QgsCoordinateTransform(
+                output_layer.crs(),
+                QgsCoordinateReferenceSystem(format_definition.force_crs),
+                QgsProject.instance())
 
-            # noinspection PyUnresolvedReferences
-            if write_result != QgsVectorFileWriter.NoError:
-                handler.appendBody(b'')
-                self.logger.critical(error_message)
-                return False
+        # datasource options
+        if format_definition.ogr_datasource_options:
+            options.datasourceOptions = format_definition.ogr_datasource_options
 
-        except Exception:
+        # write file
+        # noinspection PyArgumentList
+        write_result, error_message, _, _ = QgsVectorFileWriter.writeAsVectorFormatV3(
+            output_layer,
+            str(output_file),
+            QgsProject.instance().transformContext(),
+            options)
+
+        # noinspection PyUnresolvedReferences
+        if write_result != QgsVectorFileWriter.NoError:
             handler.appendBody(b'')
-            raise
+            self.logger.critical(error_message)
+            return False
 
         if format_definition == OutputFormats.Shp:
             # For SHP, we add the CPG, #55
@@ -342,6 +349,9 @@ class WFSFilter(QgsServerFilter):
         # Remove current context
         self.context = None
 
+        if context and context.has_errors:
+            return
+
         # Update the WFS capabilities
         # by adding ResultFormat to GetFeature
         handler = self.serverInterface().requestHandler()
@@ -366,6 +376,8 @@ class WFSFilter(QgsServerFilter):
                 except Exception as e:
                     self.logger.critical("Critical exception when processing the request :")
                     self.logger.log_exception(e)
+                    handler.clearBody()
+                    handler.setServiceException(QgsServerException("Internal error", 500))
             return
 
         if request == 'GETCAPABILITIES':

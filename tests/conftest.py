@@ -22,9 +22,6 @@ import pytest
 
 from qgis.PyQt import Qt
 
-logging.basicConfig(stream=sys.stderr)
-logging.disable(logging.NOTSET)
-
 LOGGER = logging.getLogger('server')
 LOGGER.setLevel(logging.DEBUG)
 
@@ -75,7 +72,7 @@ def pytest_sessionstart(session):
     qgis_application.initQgis()
 
     # Install logger hook
-    install_logger_hook(verbose=True)
+    install_logger_hook()
 
 
 def pytest_sessionfinish(session, exitstatus):
@@ -284,7 +281,7 @@ def load_plugins(serverIface: 'QgsServerInterface') -> None:
 # Logger hook
 #
 
-def install_logger_hook( verbose: bool=False ) -> None:
+def install_logger_hook() -> None:
     """ Install message log hook
     """
     from qgis.core import Qgis, QgsApplication
@@ -296,9 +293,7 @@ def install_logger_hook( verbose: bool=False ) -> None:
             LOGGER.warning(arg)
         elif level == Qgis.Critical:
             LOGGER.error(arg)
-        elif verbose:
-            # Qgis is somehow very noisy
-            # log only if verbose is set
+        else:
             LOGGER.info(arg)
 
     messageLog = QgsApplication.messageLog()
