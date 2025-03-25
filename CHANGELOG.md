@@ -2,16 +2,16 @@
 
 ## Unreleased
 
-## 1.8.3 - 2025-03-24
+## 1.8.3 - 2025-03-25
 
+* Improve debug in logs if `X-Request-ID` is provided in the request
 * Stream content instead of loading file content in memory
 * Set server exception on error
-* Fix mixing of QT api and Python api 
+* Fix mixing of QT API and Python API 
 
 ## 1.8.2 - 2024-08-12
 
 * Minor code cleanup
-
 
 ## 1.8.1 - 2024-06-05
 
