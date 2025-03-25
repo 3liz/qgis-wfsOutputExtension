@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 1.8.3 - 2025-03-24
+
+* Stream content instead of loading file content in memory
+* Set server exception on error
+* Fix mixing of QT api and Python api 
+
 ## 1.8.2 - 2024-08-12
 
 * Minor code cleanup
