@@ -1,18 +1,18 @@
 import logging
 
-LOGGER = logging.getLogger('server')
+LOGGER = logging.getLogger("server")
 
-__copyright__ = 'Copyright 2021, 3Liz'
-__license__ = 'GPL version 3'
-__email__ = 'info@3liz.org'
+__copyright__ = "Copyright 2021, 3Liz"
+__license__ = "GPL version 3"
+__email__ = "info@3liz.org"
 
-PROJECT = 'lines.qgs'
+PROJECT = "lines.qgs"
 
 
 def test_describefeaturetype(client):
-    """ Test DescribeFeatureType. """
+    """Test DescribeFeatureType."""
     # XMLSCHEMA is used for the sub request to get the XSD
-    outputs = ('XMLSCHEMA', )
+    outputs = ("XMLSCHEMA",)
     for output in outputs:
         query_string = (
             "?"
@@ -25,9 +25,9 @@ def test_describefeaturetype(client):
         )
         rv = client.get(query_string, PROJECT)
         assert rv.status_code == 200
-        assert rv.headers.get('Content-Type', '').find('text/xml') == 0
+        assert rv.headers.get("Content-Type", "").find("text/xml") == 0
 
-        data = rv.content.decode('utf-8')
+        data = rv.content.decode("utf-8")
 
         expected = [
             'name="geometry"',
@@ -35,4 +35,4 @@ def test_describefeaturetype(client):
             'name="name"',
         ]
         for item in expected:
-            assert item in data, f'The raw data for {output} is : {data}'
+            assert item in data, f"The raw data for {output} is : {data}"

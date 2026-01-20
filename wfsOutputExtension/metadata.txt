@@ -5,14 +5,13 @@ description=Adds additional output formats to WFS GetFeature request on QGIS Ser
 about=wfsOutputExtension adds additional output formats to WFS GetFeature request such as Geopackage, ODS, CSV etc.
 tags=server,format,wfs,ogc,lizmap,web,extension
 
-author=3Liz
-email=info@3liz.com
-
 tracker=https://github.com/3liz/qgis-wfsOutputExtension/issues
 repository=https://github.com/3liz/qgis-wfsOutputExtension
 homepage=https://github.com/3liz/qgis-wfsOutputExtension
 
 # Done automatically by qgis-plugin-ci
+#author=3Liz
+#email=info@3liz.com
 version=master
 commitNumber=
 commitSha1=
@@ -22,7 +21,7 @@ changelog=
 category=Server
 icon=icon.png
 
-experimental=False
+experimental=True
 deprecated=False
 server=True
 supportsQt6=True
