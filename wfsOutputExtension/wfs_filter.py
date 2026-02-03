@@ -410,7 +410,7 @@ class WFSFilter(QgsServerFilter):
 
             formats_added = False
 
-            if dom.documentElement.attributes['version'].value == '1.0.0':
+            if dom.documentElement and dom.documentElement.attributes['version'].value == '1.0.0':
 
                 for _ in dom.getElementsByTagName('GetFeature'):
                     for result_format_node in dom.getElementsByTagName('ResultFormat'):
