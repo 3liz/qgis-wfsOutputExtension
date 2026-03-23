@@ -58,3 +58,5 @@ tests/qgis_server.log
 .idea/
 wfsoutputextension.*.zip
 .docker-venv-*
+
+tests/.qgis-settings

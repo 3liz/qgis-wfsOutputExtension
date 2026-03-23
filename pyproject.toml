@@ -4,7 +4,7 @@ authors = [
     { name = "3liz", email = "info@3liz.com" }
 ]
 version = "1.8.4"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = "GPL-2.0-only"
 license-files = ["LICENSE"]
 readme = "README.md"
@@ -39,7 +39,7 @@ lint = [
 ]
 
 [tool.uv.sources]
-pytest-qgis = { git = "https://github.com/3liz/pytest-qgis.git" }
+pytest-qgis = { git = "https://github.com/3liz/pytest-qgis.git", branch="v3" }
 
 [tool.yapt]
 plugin_source = "wfsOutputExtension"
