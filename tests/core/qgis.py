@@ -16,6 +16,9 @@ from qgis.core import Qgis, QgsApplication
 from qgis.gui import QgisInterface
 from qgis.server import QgsServerInterface
 
+
+QGIS_VERSION_INT = Qgis.versionInt()
+
 #
 # Logger hook
 #
@@ -27,7 +30,7 @@ def install_logger_hook() -> None:
     from qgis.core import Qgis
 
     # Add a hook to qgis  message log
-    def writelogmessage(message, tag, level):
+    def writelogmessage(message, tag, level, *args):
         arg = f"{tag}: {message}"
         if level == Qgis.Warning:
             logging.warning(arg)
@@ -37,8 +40,10 @@ def install_logger_hook() -> None:
             logging.debug(arg)
 
     messageLog = QgsApplication.messageLog()
-    messageLog.messageReceived.connect(writelogmessage)
-
+    if QGIS_VERSION_INT < 40000:
+        messageLog.messageReceived.connect(writelogmessage)
+    else:
+        messageLog.messageReceivedWithFormat.connect(writelogmessage)
 
 #
 # Plugin loader
@@ -103,7 +108,7 @@ def _load_plugin(
 
 
 def _check_qgis_version(minver: Optional[str], maxver: Optional[str]) -> bool:
-    version = semver.Version.parse(Qgis.QGIS_VERSION.split("-", maxsplit=1)[0])
+    version = semver.Version.parse(Qgis.version().split("-", maxsplit=1)[0])
 
     def _version(ver: Optional[str]) -> semver.Version:
         if not ver:

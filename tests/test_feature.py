@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from qgis.core import Qgis, QgsVectorLayer
+from qgis.core import QgsVectorLayer
 from qgis.PyQt.QtCore import NULL, QDate, QDateTime, QVariant
 
 from .core.client import Client
@@ -36,8 +36,7 @@ def test_getfeature_gml(client: Client):
     assert "text/xml" in rv.headers.get("Content-Type", ""), rv.headers
     layer = get_test_vector_layer(rv.file("gml"), "GML")
     expected_fields = ["gml_id"]
-    if Qgis.versionInt() >= 33400:
-        expected_fields.extend(["lowerCorner", "upperCorner"])
+    expected_fields.extend(["lowerCorner", "upperCorner"])
     expected_fields.extend(["id", "trailing_zero", "name", "comment", "date_time", "date"])
     assert layer.fields().names() == expected_fields
 
@@ -45,15 +44,24 @@ def test_getfeature_gml(client: Client):
     assert layer.uniqueValues(index) == {"lines.1", "lines.2", "lines.3", "lines.4"}
 
     index = layer.fields().indexFromName("id")
+    assert layer.fields().at(index).type() == QVariant.Int
     assert layer.uniqueValues(index) == {1, 2, 3, 4}
 
     index = layer.fields().indexFromName("name")
-    # QGIS 3.24.1 and 3.22.6
     assert layer.uniqueValues(index) == {"éù%@ > 1", "(]~€ > 2", "Line < 3", "Line name"}
 
+
     index = layer.fields().indexFromName("trailing_zero")
-    # field detected as integer, so losing the trailing zero
-    assert layer.uniqueValues(index) == {5200}
+    match layer.fields().at(index).type():
+        case QVariant.Int:
+            # field detected as integer, so losing the trailing zero
+            assert layer.uniqueValues(index) == {5200}
+        case QVariant.String:
+            # In QGIS 4/Gdal 3.10 this is no more interpreted
+            # as integer
+            assert layer.uniqueValues(index) == {"05200"}
+        case unexpected:
+            assert False, f"Unexpected field type: {unexpected}"
 
     # Date time
     index = layer.fields().indexFromName("date_time")
@@ -102,13 +110,19 @@ def test_getfeature_kml(client: Client):
 
     # ID
     index = layer.fields().indexFromName("id")
-    assert layer.uniqueValues(index) == {1, 2, 3, 4}
-    assert layer.fields().at(index).type() == QVariant.Int
+    match layer.fields().at(index).type():
+        case QVariant.Int:
+            assert layer.uniqueValues(index) == {1, 2, 3, 4}
+        case QVariant.String:
+            # In QGIS 4/Gdal 3.10 the OGR (LIB)KML driver interpret this as string
+            assert layer.uniqueValues(index) == {"1", "2", "3", "4"}
+        case unexpected:
+            assert False, f"Unexpected field type: {unexpected}"
 
     # Trailing 0
     index = layer.fields().indexFromName("trailing_zero")
-    assert "05200" in layer.uniqueValues(index)
     assert layer.fields().at(index).type() == QVariant.String
+    assert "05200" in layer.uniqueValues(index)
 
 
 def test_getfeature_gpkg(client: Client):
@@ -127,13 +141,13 @@ def test_getfeature_gpkg(client: Client):
 
     # ID
     index = layer.fields().indexFromName("id")
-    assert layer.uniqueValues(index) == {1, 2, 3, 4}
     assert layer.fields().at(index).type() == QVariant.Int
+    assert layer.uniqueValues(index) == {1, 2, 3, 4}
 
     # Trailing 0
     index = layer.fields().indexFromName("trailing_zero")
-    assert "05200" in layer.uniqueValues(index)
     assert layer.fields().at(index).type() == QVariant.String
+    assert "05200" in layer.uniqueValues(index)
 
 
 def test_getfeature_gpx(client: Client):
@@ -208,18 +222,18 @@ def test_getfeature_ods(client: Client):
 
     # ID
     index = layer.fields().indexFromName("id")
-    assert layer.uniqueValues(index) == {1, 2, 3, 4}
     assert layer.fields().at(index).type() == QVariant.Int
+    assert layer.uniqueValues(index) == {1, 2, 3, 4}
 
     # Trailing 0
     index = layer.fields().indexFromName("trailing_zero")
-    assert "05200" in layer.uniqueValues(index)
     assert layer.fields().at(index).type() == QVariant.String
+    assert "05200" in layer.uniqueValues(index)
 
     # Date time
     index = layer.fields().indexFromName("date_time")
-    assert QDateTime(2023, 8, 1, 12, 0) in layer.uniqueValues(index)
     assert layer.fields().at(index).type() == QVariant.DateTime
+    assert QDateTime(2023, 8, 1, 12, 0) in layer.uniqueValues(index)
 
     # Date
     index = layer.fields().indexFromName("date")
@@ -243,13 +257,13 @@ def test_getfeature_geojson(client: Client):
 
     # ID
     index = layer.fields().indexFromName("id")
-    assert layer.uniqueValues(index) == {1, 2, 3, 4}
     assert layer.fields().at(index).type() == QVariant.Int
+    assert layer.uniqueValues(index) == {1, 2, 3, 4}
 
     # Trailing 0
     index = layer.fields().indexFromName("trailing_zero")
-    assert "05200" in layer.uniqueValues(index)
     assert layer.fields().at(index).type() == QVariant.String
+    assert "05200" in layer.uniqueValues(index)
 
 
 def test_getfeature_excel(client: Client):
@@ -269,13 +283,13 @@ def test_getfeature_excel(client: Client):
 
     # ID
     index = layer.fields().indexFromName("id")
-    assert layer.uniqueValues(index) == {1, 2, 3, 4}
     assert layer.fields().at(index).type() == QVariant.Int
+    assert layer.uniqueValues(index) == {1, 2, 3, 4}
 
     # Trailing 0
     index = layer.fields().indexFromName("trailing_zero")
-    assert "05200" in layer.uniqueValues(index)
     assert layer.fields().at(index).type() == QVariant.String
+    assert "05200" in layer.uniqueValues(index)
 
     # Date time
     index = layer.fields().indexFromName("date_time")
@@ -305,18 +319,18 @@ def test_getfeature_csv(client: Client):
     # ID
     # All fields are loaded as string
     index = layer.fields().indexFromName("id")
-    assert layer.uniqueValues(index) == {"1", "2", "3", "4"}
     assert layer.fields().at(index).type() == QVariant.String
+    assert layer.uniqueValues(index) == {"1", "2", "3", "4"}
 
     # Trailing 0
     index = layer.fields().indexFromName("trailing_zero")
-    assert "05200" in layer.uniqueValues(index)
     assert layer.fields().at(index).type() == QVariant.String
+    assert "05200" in layer.uniqueValues(index)
 
     # Date time
     index = layer.fields().indexFromName("date_time")
-    assert "2023/08/01 12:00:00" in layer.uniqueValues(index)
     assert layer.fields().at(index).type() == QVariant.String
+    assert "2023/08/01 12:00:00" in layer.uniqueValues(index)
 
     # Date
     index = layer.fields().indexFromName("date")
@@ -340,13 +354,13 @@ def test_getfeature_shapefile(client: Client):
     )
     # ID
     index = layer.fields().indexFromName("id")
-    assert layer.uniqueValues(index) == {1, 2, 3, 4}
     assert layer.fields().at(index).type() == QVariant.LongLong  # Int to LongLong compare to others
+    assert layer.uniqueValues(index) == {1, 2, 3, 4}
 
     # Trailing 0
     index = layer.fields().indexFromName("trailing_z")
-    assert "05200" in layer.uniqueValues(index)
     assert layer.fields().at(index).type() == QVariant.String
+    assert "05200" in layer.uniqueValues(index)
 
 
 def test_getfeature_tab(client: Client):
@@ -365,13 +379,13 @@ def test_getfeature_tab(client: Client):
 
     # ID
     index = layer.fields().indexFromName("id")
-    assert layer.uniqueValues(index) == {1, 2, 3, 4}
     assert layer.fields().at(index).type() == QVariant.Int
+    assert layer.uniqueValues(index) == {1, 2, 3, 4}
 
     # Trailing 0
     index = layer.fields().indexFromName("trailing_zero")
-    assert "05200" in layer.uniqueValues(index)
     assert layer.fields().at(index).type() == QVariant.String
+    assert "05200" in layer.uniqueValues(index)
 
 
 def test_getfeature_mif(client: Client):
@@ -390,13 +404,13 @@ def test_getfeature_mif(client: Client):
 
     # ID
     index = layer.fields().indexFromName("id")
-    assert layer.uniqueValues(index) == {1, 2, 3, 4}
     assert layer.fields().at(index).type() == QVariant.Int
+    assert layer.uniqueValues(index) == {1, 2, 3, 4}
 
     # Trailing 0
     index = layer.fields().indexFromName("trailing_zero")
-    assert "05200" in layer.uniqueValues(index)
     assert layer.fields().at(index).type() == QVariant.String
+    assert "05200" in layer.uniqueValues(index)
 
 
 def test_getfeature_layer_name_with_accent(client: Client):
@@ -433,13 +447,13 @@ def test_getfeature_geojson_with_selection(client: Client):
 
     # ID
     index = layer.fields().indexFromName("id")
-    assert layer.uniqueValues(index) == {1, 2}
     assert layer.fields().at(index).type() == QVariant.Int
+    assert layer.uniqueValues(index) == {1, 2}
 
     # Trailing 0
     index = layer.fields().indexFromName("trailing_zero")
-    assert "05200" in layer.uniqueValues(index)
     assert layer.fields().at(index).type() == QVariant.String
+    assert "05200" in layer.uniqueValues(index)
 
 
 def test_getfeature_fgb(client: Client):
@@ -458,20 +472,20 @@ def test_getfeature_fgb(client: Client):
 
     # ID
     index = layer.fields().indexFromName("id")
-    assert layer.uniqueValues(index) == {1, 2, 3, 4}
     assert layer.fields().at(index).type() == QVariant.Int
+    assert layer.uniqueValues(index) == {1, 2, 3, 4}
 
     # Trailing 0
     index = layer.fields().indexFromName("trailing_zero")
-    assert "05200" in layer.uniqueValues(index)
     assert layer.fields().at(index).type() == QVariant.String
+    assert "05200" in layer.uniqueValues(index)
 
     # Date time
     index = layer.fields().indexFromName("date_time")
-    assert QDateTime(2023, 8, 1, 12, 0) in layer.uniqueValues(index)
     assert layer.fields().at(index).type() == QVariant.DateTime
+    assert QDateTime(2023, 8, 1, 12, 0) in layer.uniqueValues(index)
 
     # Date
     index = layer.fields().indexFromName("date")
-    assert QDateTime(2023, 8, 1, 0, 0) in layer.uniqueValues(index)
     assert layer.fields().at(index).type() == QVariant.DateTime
+    assert QDateTime(2023, 8, 1, 0, 0) in layer.uniqueValues(index)
