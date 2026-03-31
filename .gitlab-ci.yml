@@ -41,7 +41,6 @@ qgis-tests:
         "3.34",
         "3.40",
         "3.44",
-        "nightly-release",
       ]
 
 
