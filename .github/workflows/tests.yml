@@ -22,7 +22,7 @@ jobs:
 
       - name: Run linter
         run: |
-            ruff check --preview --output-format=concise wfsOutputExtension
+            ruff check --output-format=concise wfsOutputExtension
             mypy wfsOutputExtension
 
       - name: Run security check
