@@ -12,7 +12,7 @@ from typing import (
 import pytest
 
 
-from qgis.PyQt import Qt
+from qgis.PyQt.QtCore import QT_VERSION_STR
 
 from qgis.core import Qgis, QgsFontUtils, QgsProject
 from qgis.server import (
@@ -38,7 +38,7 @@ def pytest_report_header(config):
         f"QGIS : {Qgis.versionInt()}\n"
         f"Python GDAL : {gdal.VersionInfo('VERSION_NUM')}\n"
         f"Python : {sys.version}\n"
-        f"QT : {Qt.QT_VERSION_STR}"
+        f"QT : {QT_VERSION_STR}"
     )
 
 
