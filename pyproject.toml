@@ -27,7 +27,7 @@ dev = [
 ]
 tests = [
     "pytest",
-    "pytest-qgis",
+    "pytest-qgis; python_full_version >= '3.10'",
     "semver",
     "lxml",
 ]

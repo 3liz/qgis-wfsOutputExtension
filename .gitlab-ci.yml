@@ -13,13 +13,16 @@ stages:
 # Lint
 # ------------
 lint:
-  image: ${REGISTRY_URL}/factory-ci-runner:qgis-release
+  image: ${REGISTRY_URL}/factory-ci-runner:qgis-${QGIS_FLAVOR}
   tags:
     - factory-plain
   stage: lint
   script:
     - make lint
-  allow_failure: true
+  parallel:
+    matrix:
+      - QGIS_FLAVOR: ["ltr", "release"]
+  
 
 # ------------
 # Tests
