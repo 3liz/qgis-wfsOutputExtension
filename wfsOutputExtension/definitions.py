@@ -7,6 +7,8 @@ from typing import NamedTuple, Union
 
 PLUGIN = 'WfsOutputExtension'
 
+# With Python 3.7, switch to dataclass
+
 
 class Format(NamedTuple):
     content_type: str
@@ -27,6 +29,16 @@ class OutputFormats(Format, Enum):
         for format_definition in cls.__members__.values():
             if format_definition.filename_ext == filename_ext:
                 return format_definition
+            elif filename_ext.lower() == 'xls':
+                return Format(
+                    content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    filename_ext='xlsx',
+                    force_crs=None,
+                    ogr_provider='XLSX',
+                    ogr_datasource_options=(),
+                    zip=False,
+                    ext_to_zip=(),
+                )
         return None
 
     Shp = Format(
@@ -101,6 +113,15 @@ class OutputFormats(Format, Enum):
         filename_ext='xlsx',
         force_crs=None,
         ogr_provider='XLSX',
+        ogr_datasource_options=(),
+        zip=False,
+        ext_to_zip=(),
+    )
+    Xls = Format(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        filename_ext='xls',
+        force_crs=None,
+        ogr_provider='XLS',
         ogr_datasource_options=(),
         zip=False,
         ext_to_zip=(),
